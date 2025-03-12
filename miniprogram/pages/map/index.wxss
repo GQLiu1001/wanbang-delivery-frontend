@@ -1,0 +1,120 @@
+.map-container {
+  width: 100%;
+  height: 100vh;
+  position: relative;
+}
+
+.delivery-map {
+  width: 100%;
+  height: 100%;
+}
+
+.status-panel {
+  position: absolute;
+  top: 20rpx;
+  right: 20rpx;
+  background: #FFFFFF;
+  padding: 20rpx;
+  border-radius: 12rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20rpx;
+}
+
+.status-label {
+  font-size: 28rpx;
+  color: #333333;
+}
+
+.status-value {
+  font-size: 28rpx;
+  color: #3A7FED;
+  font-weight: bold;
+}
+
+.order-panel {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #FFFFFF;
+  border-radius: 20rpx 20rpx 0 0;
+  padding: 30rpx;
+  box-shadow: 0 -2rpx 10rpx rgba(0, 0, 0, 0.1);
+}
+
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.order-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333333;
+}
+
+.order-status {
+  font-size: 28rpx;
+  color: #3A7FED;
+}
+
+.order-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.order-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.customer-name {
+  font-size: 30rpx;
+  color: #333333;
+}
+
+.customer-phone {
+  font-size: 30rpx;
+  color: #666666;
+}
+
+.order-address {
+  font-size: 28rpx;
+  color: #666666;
+  line-height: 1.4;
+}
+
+.order-actions {
+  display: flex;
+  gap: 20rpx;
+  margin-top: 20rpx;
+}
+
+.action-btn {
+  flex: 1;
+  height: 80rpx;
+  line-height: 80rpx;
+  text-align: center;
+  border-radius: 40rpx;
+  font-size: 28rpx;
+  background: #F5F5F5;
+  color: #666666;
+}
+
+.action-btn.primary {
+  background: #3A7FED;
+  color: #FFFFFF;
+} 

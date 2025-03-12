@@ -1,0 +1,47 @@
+<view class="map-container">
+  <map
+    id="deliveryMap"
+    class="delivery-map"
+    longitude="{{longitude}}"
+    latitude="{{latitude}}"
+    scale="{{scale}}"
+    markers="{{markers}}"
+    polyline="{{polyline}}"
+    show-location="true"
+    enable-rotate="true"
+    enable-satellite="{{false}}"
+    bindmarkertap="onMarkerTap"
+  ></map>
+  
+  <!-- 状态面板 -->
+  <view class="status-panel">
+    <view class="status-item">
+      <text class="status-label">工作状态</text>
+      <switch checked="{{isOnline}}" bindchange="toggleWorkStatus" color="#3A7FED"/>
+    </view>
+    <view class="status-item">
+      <text class="status-value">{{currentOrder ? '配送中' : '空闲'}}</text>
+    </view>
+  </view>
+
+  <!-- 当前订单信息 -->
+  <view class="order-panel" wx:if="{{currentOrder}}">
+    <view class="order-header">
+      <text class="order-title">当前配送</text>
+      <text class="order-status">{{currentOrder.statusText}}</text>
+    </view>
+    <view class="order-content">
+      <view class="order-info">
+        <text class="customer-name">{{currentOrder.customerName}}</text>
+        <text class="customer-phone">{{currentOrder.customerPhone}}</text>
+      </view>
+      <view class="order-address">
+        <text>{{currentOrder.deliveryAddress}}</text>
+      </view>
+      <view class="order-actions">
+        <button class="action-btn" bindtap="navigateToAddress">导航</button>
+        <button class="action-btn primary" bindtap="updateOrderStatus">{{currentOrder.nextActionText}}</button>
+      </view>
+    </view>
+  </view>
+</view> 

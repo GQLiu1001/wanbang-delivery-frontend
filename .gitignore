@@ -1,0 +1,50 @@
+# 微信小程序特有文件
+miniprogram_npm/
+node_modules/
+miniprogram/node_modules/
+
+# 项目配置文件
+project.config.json
+project.private.config.json
+
+# 编译生成的文件
+dist/
+
+# 本地缓存文件
+.DS_Store
+Thumbs.db
+
+# 编辑器配置文件
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 日志文件
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 临时文件
+tmp/
+temp/
+
+# 微信开发者工具本地设置
+.ideaide/
+
+# 微信小程序打包文件
+miniprogram/miniprogram_npm/
+
+# 云函数相关
+cloudfunctions/*/node_modules/
+cloudfunctions/*/package-lock.json
+
+# 其他常见忽略文件
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local 
+
+.md

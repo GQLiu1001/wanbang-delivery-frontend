@@ -1,0 +1,155 @@
+.coupon-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #F5F5F5;
+}
+
+.coupon-tabs {
+  display: flex;
+  background-color: #FFFFFF;
+  padding: 0 30rpx;
+  border-bottom: 1rpx solid #EEEEEE;
+}
+
+.tab {
+  flex: 1;
+  text-align: center;
+  font-size: 28rpx;
+  color: #666666;
+  padding: 20rpx 0;
+  position: relative;
+}
+
+.tab.active {
+  color: #3A7FED;
+  font-weight: bold;
+}
+
+.tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40rpx;
+  height: 4rpx;
+  background-color: #3A7FED;
+}
+
+.coupon-list {
+  flex: 1;
+  padding: 20rpx;
+}
+
+.empty-tip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-top: 200rpx;
+}
+
+.empty-icon {
+  width: 200rpx;
+  height: 200rpx;
+  margin-bottom: 20rpx;
+}
+
+.empty-text {
+  font-size: 28rpx;
+  color: #999999;
+}
+
+.coupon-item {
+  display: flex;
+  background-color: #FFFFFF;
+  border-radius: 12rpx;
+  margin-bottom: 20rpx;
+  overflow: hidden;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+  position: relative;
+}
+
+.coupon-item.expired {
+  opacity: 0.6;
+}
+
+.coupon-left {
+  width: 200rpx;
+  background-color: #3A7FED;
+  color: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30rpx 0;
+  position: relative;
+}
+
+.coupon-left::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 20rpx;
+  background: radial-gradient(circle at left, transparent 10rpx, #FFFFFF 10rpx);
+  background-size: 20rpx 20rpx;
+  background-position: -10rpx 10rpx;
+}
+
+.coupon-amount {
+  display: flex;
+  align-items: baseline;
+}
+
+.amount-symbol {
+  font-size: 28rpx;
+  margin-right: 4rpx;
+}
+
+.amount-value {
+  font-size: 48rpx;
+  font-weight: bold;
+}
+
+.coupon-condition {
+  font-size: 22rpx;
+  margin-top: 10rpx;
+}
+
+.coupon-right {
+  flex: 1;
+  padding: 20rpx 30rpx;
+  position: relative;
+}
+
+.coupon-name {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333333;
+  margin-bottom: 10rpx;
+}
+
+.coupon-time {
+  font-size: 24rpx;
+  color: #999999;
+  margin-bottom: 10rpx;
+}
+
+.coupon-desc {
+  font-size: 24rpx;
+  color: #666666;
+}
+
+.coupon-status {
+  position: absolute;
+  right: 20rpx;
+  top: 20rpx;
+}
+
+.status-icon {
+  width: 80rpx;
+  height: 80rpx;
+} 

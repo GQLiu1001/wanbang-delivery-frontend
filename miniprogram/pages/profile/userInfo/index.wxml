@@ -1,0 +1,47 @@
+<!--pages/profile/userInfo/index.wxml-->
+<view class="userinfo-container">
+  <view class="userinfo-header">
+    <view class="avatar-container">
+      <image class="avatar" src="{{userInfo.avatar || '/assets/images/default-avatar.png'}}" mode="aspectFill"></image>
+      <view class="avatar-edit" bindtap="chooseAvatar">
+        <text class="edit-text">更换</text>
+      </view>
+    </view>
+  </view>
+  
+  <view class="userinfo-form">
+    <view class="form-item">
+      <text class="form-label">姓名</text>
+      <input class="form-input" value="{{userInfo.driverName}}" placeholder="请输入姓名" bindinput="inputDriverName" />
+    </view>
+    
+    <view class="form-item">
+      <text class="form-label">手机号</text>
+      <input class="form-input" value="{{userInfo.phone}}" placeholder="请输入手机号" bindinput="inputPhone" type="number" maxlength="11" />
+    </view>
+    
+    <view class="form-item">
+      <text class="form-label">身份证号</text>
+      <input class="form-input" value="{{userInfo.idCard}}" placeholder="请输入身份证号" bindinput="inputIdCard" maxlength="18" />
+    </view>
+    
+    <view class="form-item">
+      <text class="form-label">车牌号</text>
+      <input class="form-input" value="{{userInfo.plateNumber}}" placeholder="请输入车牌号" bindinput="inputPlateNumber" />
+    </view>
+    
+    <view class="form-item">
+      <text class="form-label">车辆类型</text>
+      <picker class="form-picker" bindchange="vehicleTypeChange" value="{{vehicleTypeIndex}}" range="{{vehicleTypes}}">
+        <view class="picker-text">{{vehicleTypes[vehicleTypeIndex] || '请选择车辆类型'}}</view>
+      </picker>
+    </view>
+    
+    <view class="form-item">
+      <text class="form-label">最大载重</text>
+      <input class="form-input" value="{{userInfo.maxLoad}}" placeholder="请输入最大载重(千克)" bindinput="inputMaxLoad" type="number" />
+    </view>
+  </view>
+  
+  <view class="submit-btn" bindtap="saveUserInfo">保存信息</view>
+</view>
