@@ -3,10 +3,6 @@ miniprogram_npm/
 node_modules/
 miniprogram/node_modules/
 
-# 项目配置文件
-project.config.json
-project.private.config.json
-
 # 编译生成的文件
 dist/
 
@@ -46,5 +42,3 @@ cloudfunctions/*/package-lock.json
 .env.development.local
 .env.test.local
 .env.production.local 
-
-.md
