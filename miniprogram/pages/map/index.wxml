@@ -13,34 +13,140 @@
     bindmarkertap="onMarkerTap"
   ></map>
   
-  <!-- 状态面板 -->
-  <view class="status-panel">
-    <view class="status-item">
-      <text class="status-label">工作状态</text>
-      <switch checked="{{isOnline}}" bindchange="toggleWorkStatus" color="#3A7FED"/>
+  <!-- 顶部控制区域 -->
+  <view class="top-control-bar">
+    <!-- 路线信息面板 -->
+    <view class="route-panel info-panel" wx:if="{{currentOrder}}">
+      <view class="panel-row">
+        <text class="info-label">距离</text>
+        <text class="info-value">{{routeDistance}}km</text>
+      </view>
+      <view class="panel-row">
+        <text class="info-label">时间</text>
+        <text class="info-value">{{routeTime}}分钟</text>
+      </view>
     </view>
-    <view class="status-item">
-      <text class="status-value">{{currentOrder ? '配送中' : '空闲'}}</text>
+    
+    <!-- 状态面板 -->
+    <view class="status-panel info-panel">
+      <view class="panel-row">
+        <text class="info-label">状态</text>
+        <text class="info-value">{{deliveryStatus}}</text>
+      </view>
+      <view class="panel-row" wx:if="{{!currentOrder}}">
+        <text class="info-label">在线</text>
+        <switch class="status-switch" checked="{{isOnline}}" bindchange="toggleOnlineStatus" color="#3A7FED" />
+      </view>
     </view>
   </view>
-
-  <!-- 当前订单信息 -->
-  <view class="order-panel" wx:if="{{currentOrder}}">
-    <view class="order-header">
-      <text class="order-title">当前配送</text>
-      <text class="order-status">{{currentOrder.statusText}}</text>
+  
+  <!-- 浮动按钮区域 -->
+  <view class="float-buttons">
+    <!-- 取消订单按钮 -->
+    <view class="float-button cancel-btn" bindtap="cancelAllOrders" wx:if="{{currentOrder}}">
+      <image class="button-icon" src="/images/icons/cancel.png"></image>
     </view>
-    <view class="order-content">
-      <view class="order-info">
-        <text class="customer-name">{{currentOrder.customerName}}</text>
-        <text class="customer-phone">{{currentOrder.customerPhone}}</text>
+  </view>
+  
+  <!-- 位置选择下拉面板 -->
+  <view class="dropdown-panel" wx:if="{{showLocationPicker}}">
+    <view class="panel-item" bindtap="selectLocation" data-type="start">起点</view>
+    <view class="panel-item" bindtap="selectLocation" data-type="end">终点</view>
+    <view class="panel-item" bindtap="selectLocation" data-type="customer">客户</view>
+  </view>
+  
+  <!-- 底部订单信息面板 -->
+  <view class="bottom-panel" wx:if="{{currentOrder}}">
+    <view class="panel-header">
+      <view class="panel-title">
+        <text>订单信息</text>
+        <text class="order-status">{{orderStatus}}</text>
       </view>
-      <view class="order-address">
-        <text>{{currentOrder.deliveryAddress}}</text>
+    </view>
+    <view class="panel-content">
+      <view class="order-details">
+        <view class="detail-row">
+          <text class="detail-label">客户</text>
+          <text class="detail-value">{{customerName}}</text>
+        </view>
+        <view class="detail-row">
+          <text class="detail-label">电话</text>
+          <text class="detail-value">{{customerPhone}}</text>
+        </view>
+        <view class="detail-row address-row">
+          <text class="detail-label">地址</text>
+          <text class="detail-value address-value">{{customerAddress}}</text>
+        </view>
+        <view class="detail-row" wx:if="{{currentOrder.weight}}">
+          <text class="detail-label">货物</text>
+          <text class="detail-value">{{currentOrder.weight}} {{currentOrder.cargo}}</text>
+        </view>
+        <view class="detail-row" wx:if="{{currentOrder.price}}">
+          <text class="detail-label">运费</text>
+          <text class="detail-value price">{{currentOrder.price}}</text>
+        </view>
       </view>
-      <view class="order-actions">
-        <button class="action-btn" bindtap="navigateToAddress">导航</button>
-        <button class="action-btn primary" bindtap="updateOrderStatus">{{currentOrder.nextActionText}}</button>
+      
+      <view class="action-buttons">
+        <button class="action-btn" bindtap="callCustomer">联系客户</button>
+        <button class="action-btn primary" bindtap="updateOrderStatus">{{nextActionText}}</button>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 无订单提示 -->
+  <view class="empty-order-tip" wx:if="{{!currentOrder && isOnline}}">
+    <text>等待新订单</text>
+    <text class="sub-tip">在线状态可以接收订单推送</text>
+  </view>
+  
+  <view class="empty-order-tip" wx:if="{{!currentOrder && !isOnline}}">
+    <text>当前处于离线状态</text>
+    <text class="sub-tip">请切换在线状态开始接单</text>
+  </view>
+  
+  <!-- 新订单弹窗 -->
+  <view class="order-popup" wx:if="{{newOrderVisible}}">
+    <view class="popup-mask"></view>
+    <view class="popup-content">
+      <view class="popup-header">
+        <text class="popup-title">新订单</text>
+      </view>
+      
+      <view class="popup-body">
+        <view class="order-info-row highlight">
+          <text class="info-title">订单金额</text>
+          <text class="info-content price">{{newOrder.price}}</text>
+        </view>
+        
+        <view class="order-info-row">
+          <text class="info-title">客户</text>
+          <text class="info-content">{{newOrder.customerName}}</text>
+        </view>
+        
+        <view class="order-info-row">
+          <text class="info-title">货物</text>
+          <text class="info-content">{{newOrder.weight}} {{newOrder.cargo}}</text>
+        </view>
+        
+        <view class="order-info-row">
+          <text class="info-title">地址</text>
+          <text class="info-content">{{newOrder.deliveryAddress}}</text>
+        </view>
+      </view>
+      
+      <view class="popup-footer">
+        <view class="countdown-bar">
+          <text>{{countdownTime || 60}}秒内应答</text>
+          <view class="progress-bar">
+            <view class="progress" style="width: {{(countdownTime || 60) / 60 * 100}}%;"></view>
+          </view>
+        </view>
+        
+        <view class="popup-buttons">
+          <button class="popup-btn reject" bindtap="rejectOrder">拒绝订单</button>
+          <button class="popup-btn accept" bindtap="acceptOrder">接受订单</button>
+        </view>
       </view>
     </view>
   </view>

@@ -37,24 +37,10 @@ Page({
     }
   },
 
-  // 导航到历史订单页面
-  navigateToOrders() {
-    wx.navigateTo({
-      url: '/pages/profile/orderHistory/index'
-    })
-  },
-
   // 导航到个人信息页面
   navigateToUserInfo() {
     wx.navigateTo({
       url: '/pages/profile/userInfo/index'
-    })
-  },
-
-  // 导航到车辆信息页面
-  navigateToVehicleInfo() {
-    wx.navigateTo({
-      url: '/pages/profile/vehicleInfo/index'
     })
   },
 

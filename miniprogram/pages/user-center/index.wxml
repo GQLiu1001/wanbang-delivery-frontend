@@ -1,47 +1,84 @@
-<!-- pages/me/index.wxml -->
+<!-- pages/user-center/index.wxml -->
 <view class="page_container">
   <view class="top_bg" />
   <view class="main_content">
     <view class="userinfo_container">
-      <image class="avatar" src="../../images/icons/avatar.png" bind:tap="getOpenId" mode="widthFix" />
-      <block wx:if="{{ !openId }}">
-        <view class="username" bind:tap="getOpenId">请点击登录</view>
+      <image class="avatar" src="{{userInfo.avatar || '../../images/icons/avatar.png'}}" mode="aspectFill" />
+      <block wx:if="{{ !userInfo.driverName }}">
+        <view class="username" bind:tap="navigateToUserInfo">请完善个人信息</view>
       </block>
       <block wx:else>
-        <view class="username">openId: {{ openId }}</view>
+        <view class="username">{{userInfo.driverName || '司机'}}</view>
+        <view class="user-status">{{userInfo.status === 1 ? '空闲中' : userInfo.status === 2 ? '忙碌中' : '离线'}}</view>
       </block>
     </view>
-    <view class="settings_container">
-      <!-- <view class="setting_item">
-        <view class="left">
-          <image class="setting_icon" src="../../images/icons/setting.svg" />
-          <view class="setting_text">个人信息设置</view>
-        </view>
-        <image class="arrow_icon" src="../../images/arrow.svg" />
-      </view> -->
-      <!-- <view class="setting_item">
-        <view class="left">
-          <image class="setting_icon" src="../../images/icons/question.svg" />
-          <view class="setting_text">常见问题</view>
-        </view>
-        <image class="arrow_icon" src="../../images/arrow.svg" />
-      </view> -->
-      <view class="setting_item">
-        <view class="left">
-          <image class="setting_icon" src="../../images/icons/customer-service.svg" />
-          <!-- <view class="setting_text">联系客服</view> -->
-          <button open-type="contact" class="contact-button">
-            联系客服
-          </button>
-        </view>
-        <image class="arrow_icon" src="../../images/arrow.svg" />
+
+    <view class="stats-container">
+      <view class="stat-item">
+        <view class="stat-value">{{userInfo.orderCount || '0'}}</view>
+        <view class="stat-label">完成订单</view>
       </view>
-      <view class="setting_item" bind:tap="gotoWxCodePage">
-        <view class="left">
-          <image class="setting_icon" src="../../images/icons/share.svg" />
-          <view class="setting_text">分享小程序</view>
+      <view class="stat-item">
+        <view class="stat-value">{{userInfo.rating || '5.0'}}</view>
+        <view class="stat-label">平均评分</view>
+      </view>
+      <view class="stat-item">
+        <view class="stat-value">¥{{userInfo.monthlyIncome || '0.00'}}</view>
+        <view class="stat-label">本月收入</view>
+      </view>
+    </view>
+    
+    <view class="menu-container">
+      <view class="menu-title">我的信息</view>
+      <view class="menu-item" bindtap="navigateToUserInfo">
+        <view class="menu-left">
+          <image class="menu-icon" src="../../images/icons/user.png" />
+          <view class="menu-text">个人信息</view>
         </view>
-        <image class="arrow_icon" src="../../images/arrow.svg" />
+        <image class="arrow-icon" src="../../images/icons/arrow.png" />
+      </view>
+      
+      <view class="menu-item" bindtap="navigateToOrderHistory">
+        <view class="menu-left">
+          <image class="menu-icon" src="../../images/icons/order.png" />
+          <view class="menu-text">订单记录</view>
+        </view>
+        <image class="arrow-icon" src="../../images/icons/arrow.png" />
+      </view>
+      
+      <view class="menu-item" bindtap="navigateToWallet">
+        <view class="menu-left">
+          <image class="menu-icon" src="../../images/icons/wallet.png" />
+          <view class="menu-text">我的钱包</view>
+        </view>
+        <image class="arrow-icon" src="../../images/icons/arrow.png" />
+      </view>
+    </view>
+    
+    <view class="menu-container">
+      <view class="menu-title">帮助与支持</view>
+      <view class="menu-item">
+        <view class="menu-left">
+          <image class="menu-icon" src="../../images/icons/customer-service.svg" />
+          <button open-type="contact" class="contact-button">联系客服</button>
+        </view>
+        <image class="arrow-icon" src="../../images/icons/arrow.png" />
+      </view>
+      
+      <view class="menu-item" bindtap="gotoWxCodePage">
+        <view class="menu-left">
+          <image class="menu-icon" src="../../images/icons/share.svg" />
+          <view class="menu-text">分享小程序</view>
+        </view>
+        <image class="arrow-icon" src="../../images/icons/arrow.png" />
+      </view>
+      
+      <view class="menu-item" bindtap="handleLogout" wx:if="{{userInfo.driverName}}">
+        <view class="menu-left">
+          <image class="menu-icon" src="../../images/icons/logout.png" />
+          <view class="menu-text">退出登录</view>
+        </view>
+        <image class="arrow-icon" src="../../images/icons/arrow.png" />
       </view>
     </view>
   </view>

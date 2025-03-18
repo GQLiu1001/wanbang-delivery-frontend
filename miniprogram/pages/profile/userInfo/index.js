@@ -9,9 +9,17 @@ Page({
       driverName: '',
       phone: '',
       idCard: '',
+      driverLicense: '',
+      driverLicenseFront: '',
+      driverLicenseBack: '',
       plateNumber: '',
       vehicleType: '',
       maxLoad: '',
+      vehicleBrand: '',
+      vehicleModel: '',
+      vehicleLicenseNumber: '',
+      vehicleLicenseFront: '',
+      vehicleLicenseBack: '',
       avatar: ''
     },
     vehicleTypes: ['小型面包车', '中型厢式货车', '大型货车', '小型轿车', '其他'],
@@ -87,9 +95,17 @@ Page({
         driverName: '张师傅',
         phone: '13812345678',
         idCard: '330102199001011234',
+        driverLicense: 'D12345678',
+        driverLicenseFront: '',
+        driverLicenseBack: '',
         plateNumber: '浙A12345',
         vehicleType: '中型厢式货车',
         maxLoad: '2000',
+        vehicleBrand: '东风',
+        vehicleModel: 'DF100',
+        vehicleLicenseNumber: 'X12345678',
+        vehicleLicenseFront: '',
+        vehicleLicenseBack: '',
         avatar: ''
       }
       
@@ -170,6 +186,13 @@ Page({
     })
   },
 
+  // 输入驾驶证号
+  inputDriverLicense(e) {
+    this.setData({
+      'userInfo.driverLicense': e.detail.value
+    })
+  },
+
   // 输入车牌号
   inputPlateNumber(e) {
     this.setData({
@@ -190,6 +213,88 @@ Page({
   inputMaxLoad(e) {
     this.setData({
       'userInfo.maxLoad': e.detail.value
+    })
+  },
+
+  // 上传驾驶证正本
+  uploadDriverLicenseFront() {
+    this.uploadImage('driverLicenseFront')
+  },
+
+  // 上传驾驶证副本
+  uploadDriverLicenseBack() {
+    this.uploadImage('driverLicenseBack')
+  },
+
+  // 输入车辆品牌
+  inputVehicleBrand(e) {
+    this.setData({
+      'userInfo.vehicleBrand': e.detail.value
+    })
+  },
+
+  // 输入车辆型号
+  inputVehicleModel(e) {
+    this.setData({
+      'userInfo.vehicleModel': e.detail.value
+    })
+  },
+
+  // 输入行驶证号
+  inputVehicleLicenseNumber(e) {
+    this.setData({
+      'userInfo.vehicleLicenseNumber': e.detail.value
+    })
+  },
+
+  // 上传行驶证正本
+  uploadVehicleLicenseFront() {
+    this.uploadImage('vehicleLicenseFront')
+  },
+
+  // 上传行驶证副本
+  uploadVehicleLicenseBack() {
+    this.uploadImage('vehicleLicenseBack')
+  },
+
+  // 通用图片上传函数
+  uploadImage(field) {
+    wx.chooseImage({
+      count: 1,
+      sizeType: ['compressed'],
+      sourceType: ['album', 'camera'],
+      success: (res) => {
+        const tempFilePath = res.tempFilePaths[0]
+        
+        // 更新对应字段
+        const dataField = `userInfo.${field}`
+        this.setData({
+          [dataField]: tempFilePath
+        })
+        
+        // TODO: 上传图片到服务器
+        // wx.uploadFile({
+        //   url: 'your-upload-url',
+        //   filePath: tempFilePath,
+        //   name: field,
+        //   success: (res) => {
+        //     const data = JSON.parse(res.data)
+        //     if (data.success) {
+        //       wx.showToast({
+        //         title: '图片上传成功',
+        //         icon: 'success'
+        //       })
+        //     }
+        //   },
+        //   fail: (error) => {
+        //     console.error('上传图片失败:', error)
+        //     wx.showToast({
+        //       title: '上传失败',
+        //       icon: 'none'
+        //     })
+        //   }
+        // })
+      }
     })
   },
 
@@ -217,9 +322,30 @@ Page({
       })
     }
     
+    if (!this.data.userInfo.driverLicense) {
+      return wx.showToast({
+        title: '请输入驾驶证号',
+        icon: 'none'
+      })
+    }
+    
     if (!this.data.userInfo.plateNumber) {
       return wx.showToast({
         title: '请输入车牌号',
+        icon: 'none'
+      })
+    }
+    
+    if (!this.data.userInfo.vehicleType) {
+      return wx.showToast({
+        title: '请选择车辆类型',
+        icon: 'none'
+      })
+    }
+    
+    if (!this.data.userInfo.maxLoad) {
+      return wx.showToast({
+        title: '请输入最大载重',
         icon: 'none'
       })
     }

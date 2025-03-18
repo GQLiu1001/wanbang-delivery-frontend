@@ -16,7 +16,10 @@ Page({
    * 生命周期函数--监听页面加载
    */
   onLoad(options) {
-    this.loadOrders()
+    // 确保初始化后立即加载数据
+    setTimeout(() => {
+      this.loadOrders()
+    }, 100)
   },
 
   /**
@@ -107,11 +110,11 @@ Page({
       // })
       
       // 模拟数据
-      const mockOrders = this.getMockOrders(this.data.activeTab)
+      const mockOrders = this.getMockOrders(this.data.activeTab) || []
       
       setTimeout(() => {
         this.setData({
-          orders: this.data.page === 1 ? mockOrders : [...this.data.orders, ...mockOrders],
+          orders: this.data.page === 1 ? mockOrders : [...(this.data.orders || []), ...mockOrders],
           loading: false,
           page: this.data.page + 1,
           hasMore: mockOrders.length === 10
@@ -134,7 +137,16 @@ Page({
 
   // 接单
   async acceptOrder(e) {
+    if (!e || !e.currentTarget || !e.currentTarget.dataset) return
+    
     const orderId = e.currentTarget.dataset.id
+    if (!orderId) {
+      wx.showToast({
+        title: '订单信息无效',
+        icon: 'none'
+      })
+      return
+    }
     
     wx.showModal({
       title: '确认接单',
@@ -174,7 +186,16 @@ Page({
 
   // 完成配送
   async completeOrder(e) {
+    if (!e || !e.currentTarget || !e.currentTarget.dataset) return
+    
     const orderId = e.currentTarget.dataset.id
+    if (!orderId) {
+      wx.showToast({
+        title: '订单信息无效',
+        icon: 'none'
+      })
+      return
+    }
     
     wx.showModal({
       title: '确认完成',
@@ -212,9 +233,68 @@ Page({
     })
   },
 
+  // 取消订单
+  async cancelOrder(e) {
+    if (!e || !e.currentTarget || !e.currentTarget.dataset) return
+    
+    const orderId = e.currentTarget.dataset.id
+    if (!orderId) {
+      wx.showToast({
+        title: '订单信息无效',
+        icon: 'none'
+      })
+      return
+    }
+    
+    wx.showModal({
+      title: '取消订单',
+      content: '确定要取消该订单吗？取消后无法恢复',
+      success: async (res) => {
+        if (res.confirm) {
+          try {
+            // TODO: 调用后端接口取消订单
+            // await wx.cloud.callFunction({
+            //   name: 'cancelOrder',
+            //   data: { orderId }
+            // })
+            
+            wx.showToast({
+              title: '订单已取消',
+              icon: 'success'
+            })
+            
+            // 刷新订单列表
+            this.setData({
+              page: 1,
+              orders: [],
+              hasMore: true
+            })
+            this.loadOrders()
+          } catch (error) {
+            console.error('取消订单失败:', error)
+            wx.showToast({
+              title: '操作失败',
+              icon: 'none'
+            })
+          }
+        }
+      }
+    })
+  },
+
   // 导航到地图
   navigateToMap(e) {
+    if (!e || !e.currentTarget || !e.currentTarget.dataset) return
+    
     const orderId = e.currentTarget.dataset.id
+    if (!orderId) {
+      wx.showToast({
+        title: '订单信息无效',
+        icon: 'none'
+      })
+      return
+    }
+    
     // 跳转到地图页面并传递订单ID
     wx.switchTab({
       url: '/pages/map/index'
@@ -244,8 +324,14 @@ Page({
       }
     }
     
+    // 如果status不在statusMap中，使用waiting作为默认值
+    const currentStatus = statusMap[status] || statusMap['waiting']
+    
     const orders = []
-    const count = Math.min(10, Math.floor(Math.random() * 10) + 1)
+    // 确保至少返回1条数据
+    const count = status === 'waiting' ? 
+                  Math.min(10, Math.floor(Math.random() * 10) + 3) : 
+                  Math.min(10, Math.floor(Math.random() * 5) + 1)
     
     for (let i = 0; i < count; i++) {
       orders.push({
@@ -254,9 +340,10 @@ Page({
         customerName: `客户${i + 1}`,
         customerPhone: `1381234${(1000 + i).toString().substr(-4)}`,
         deliveryAddress: `杭州市西湖区文三路${100 + i}号`,
+        tonnage: (Math.random() * 5 + 1).toFixed(1),
         deliveryFee: (15 + Math.random() * 10).toFixed(2),
-        status: statusMap[status].status,
-        statusText: statusMap[status].statusText
+        status: currentStatus.status,
+        statusText: currentStatus.statusText
       })
     }
     

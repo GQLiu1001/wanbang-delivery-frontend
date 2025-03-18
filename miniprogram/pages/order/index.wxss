@@ -156,6 +156,11 @@
   color: #FFFFFF;
 }
 
+.action-btn.warning {
+  background-color: #FF5151;
+  color: #FFFFFF;
+}
+
 .loading {
   display: flex;
   align-items: center;

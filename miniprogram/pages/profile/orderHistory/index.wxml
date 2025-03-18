@@ -41,7 +41,7 @@
             <text class="info-value address-value">{{item.deliveryAddress}}</text>
           </view>
           <view class="info-item">
-            <text class="info-label">配送费:</text>
+            <text class="info-label">费用:</text>
             <text class="info-value">¥{{item.deliveryFee}}</text>
           </view>
           <view class="info-item">

@@ -41,7 +41,11 @@
             <text class="info-value address-value">{{item.deliveryAddress}}</text>
           </view>
           <view class="info-item">
-            <text class="info-label">配送费:</text>
+            <text class="info-label">吨位:</text>
+            <text class="info-value">{{item.tonnage || '0'}}吨</text>
+          </view>
+          <view class="info-item">
+            <text class="info-label">费用:</text>
             <text class="info-value">¥{{item.deliveryFee}}</text>
           </view>
         </view>
@@ -49,8 +53,8 @@
         <view class="order-actions">
           <button wx:if="{{activeTab === 'waiting'}}" class="action-btn primary" bindtap="acceptOrder" data-id="{{item.id}}">接单</button>
           <button wx:if="{{activeTab === 'ongoing'}}" class="action-btn" bindtap="navigateToMap" data-id="{{item.id}}">导航</button>
+          <button wx:if="{{activeTab === 'ongoing'}}" class="action-btn warning" bindtap="cancelOrder" data-id="{{item.id}}">取消订单</button>
           <button wx:if="{{activeTab === 'ongoing'}}" class="action-btn primary" bindtap="completeOrder" data-id="{{item.id}}">完成配送</button>
-          <button wx:if="{{activeTab === 'completed'}}" class="action-btn" bindtap="viewOrderDetail" data-id="{{item.id}}">查看详情</button>
         </view>
       </view>
     </view>
