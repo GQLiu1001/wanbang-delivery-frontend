@@ -1,36 +1,32 @@
 .wallet-container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
+  min-height: 100vh;
   background-color: #F5F5F5;
-  width: 100%;
-  overflow-x: hidden;
+  padding: 30rpx;
 }
 
 .wallet-header {
-  background-color: #3A7FED;
-  padding: 5% 5%;
-  color: #FFFFFF;
-  width: 90%;
+  background-color: #FFFFFF;
+  border-radius: 12rpx;
+  padding: 40rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
 }
 
 .balance-section {
   display: flex;
   flex-direction: column;
-  margin-bottom: 5%;
+  align-items: center;
 }
 
 .balance-label {
   font-size: 28rpx;
-  margin-bottom: 10rpx;
+  color: #999999;
+  margin-bottom: 20rpx;
 }
 
 .balance-value {
   font-size: 60rpx;
   font-weight: bold;
-  width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  color: #333333;
 }
 
 .action-buttons {

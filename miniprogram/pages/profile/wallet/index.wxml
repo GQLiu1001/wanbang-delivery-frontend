@@ -4,47 +4,5 @@
       <text class="balance-label">账户余额(元)</text>
       <text class="balance-value">{{balance}}</text>
     </view>
-    <view class="action-buttons">
-      <view class="action-btn" bindtap="goToWithdraw">
-        <image class="action-icon" src="/assets/icons/withdraw.png"></image>
-        <text class="action-text">提现</text>
-      </view>
-      <view class="action-btn" bindtap="goToRecharge">
-        <image class="action-icon" src="/assets/icons/recharge.png"></image>
-        <text class="action-text">充值</text>
-      </view>
-    </view>
   </view>
-  
-  <view class="wallet-tabs">
-    <view class="tab {{currentTab === 0 ? 'active' : ''}}" bindtap="switchTab" data-index="0">
-      全部
-    </view>
-    <view class="tab {{currentTab === 1 ? 'active' : ''}}" bindtap="switchTab" data-index="1">
-      收入
-    </view>
-    <view class="tab {{currentTab === 2 ? 'active' : ''}}" bindtap="switchTab" data-index="2">
-      支出
-    </view>
-  </view>
-  
-  <scroll-view scroll-y="true" class="transaction-list" bindscrolltolower="loadMoreTransactions">
-    <view wx:if="{{transactions.length === 0}}" class="empty-tip">
-      <image class="empty-icon" src="/assets/icons/empty.png"></image>
-      <text class="empty-text">暂无交易记录</text>
-    </view>
-    
-    <view wx:for="{{transactions}}" wx:key="id" class="transaction-item" bindtap="viewTransactionDetail" data-id="{{item.id}}">
-      <view class="transaction-info">
-        <text class="transaction-type">{{item.type}}</text>
-        <text class="transaction-time">{{item.time}}</text>
-      </view>
-      <text class="transaction-amount {{item.isIncome ? 'income' : 'expense'}}">{{item.isIncome ? '+' : '-'}}{{item.amount}}</text>
-    </view>
-    
-    <view wx:if="{{loading}}" class="loading">
-      <view class="loading-spinner"></view>
-      <text class="loading-text">加载中...</text>
-    </view>
-  </scroll-view>
 </view> 
