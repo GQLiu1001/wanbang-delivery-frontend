@@ -4,7 +4,6 @@ Page({
       driverName: '',
       driverId: '',
       avatar: '',
-      score: '5.0',
       orderCount: '0',
       monthlyIncome: '0.00'
     }
@@ -66,13 +65,6 @@ Page({
     })
   },
 
-  // 导航到设置页面
-  navigateToSettings() {
-    wx.navigateTo({
-      url: '/pages/profile/settings/index'
-    })
-  },
-
   // 处理退出登录
   handleLogout() {
     wx.showModal({
@@ -95,7 +87,6 @@ Page({
                 driverName: '',
                 driverId: '',
                 avatar: '',
-                score: '5.0',
                 orderCount: '0',
                 monthlyIncome: '0.00'
               }

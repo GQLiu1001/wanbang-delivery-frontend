@@ -36,9 +36,9 @@
             <text class="info-label">电话:</text>
             <text class="info-value">{{item.customerPhone}}</text>
           </view>
-          <view class="info-item">
+          <view class="info-item address-item">
             <text class="info-label">地址:</text>
-            <text class="info-value">{{item.deliveryAddress}}</text>
+            <text class="info-value address-value">{{item.deliveryAddress}}</text>
           </view>
           <view class="info-item">
             <text class="info-label">配送费:</text>

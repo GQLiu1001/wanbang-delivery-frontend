@@ -3,6 +3,7 @@
   flex-direction: column;
   height: 100vh;
   background-color: #F5F5F5;
+  overflow: hidden;
 }
 
 .order-tabs {
@@ -10,6 +11,7 @@
   background-color: #FFFFFF;
   padding: 0 30rpx;
   border-bottom: 1rpx solid #EEEEEE;
+  flex-shrink: 0;
 }
 
 .tab {
@@ -40,6 +42,8 @@
 .order-list {
   flex: 1;
   padding: 20rpx;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .empty-tip {
@@ -67,6 +71,8 @@
   margin-bottom: 20rpx;
   overflow: hidden;
   box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .order-header {
@@ -75,6 +81,7 @@
   align-items: center;
   padding: 20rpx 30rpx;
   border-bottom: 1rpx solid #EEEEEE;
+  flex-wrap: wrap;
 }
 
 .order-no {
@@ -89,6 +96,8 @@
 
 .order-content {
   padding: 20rpx 30rpx;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .order-info {
@@ -98,35 +107,48 @@
 .info-item {
   display: flex;
   margin-bottom: 10rpx;
+  flex-wrap: wrap;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .info-label {
   width: 80rpx;
   font-size: 26rpx;
   color: #999999;
+  flex-shrink: 0;
 }
 
 .info-value {
   flex: 1;
   font-size: 26rpx;
   color: #333333;
+  word-break: break-all;
+  word-wrap: break-word;
+  max-width: calc(100% - 80rpx);
+  box-sizing: border-box;
 }
 
 .order-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 20rpx;
+  flex-wrap: wrap;
+  margin-top: 20rpx;
+  gap: 12rpx;
 }
 
 .action-btn {
-  min-width: 160rpx;
+  min-width: 140rpx;
   height: 60rpx;
   line-height: 60rpx;
-  font-size: 26rpx;
-  padding: 0 20rpx;
+  font-size: 24rpx;
+  padding: 0 16rpx;
   background-color: #F5F5F5;
   color: #666666;
   border-radius: 30rpx;
+  margin: 0;
+  box-sizing: border-box;
+  text-align: center;
 }
 
 .action-btn.primary {
@@ -159,4 +181,13 @@
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+.address-item {
+  align-items: flex-start;
+}
+
+.address-value {
+  white-space: normal;
+  line-height: 1.4;
 } 

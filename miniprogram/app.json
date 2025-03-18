@@ -2,13 +2,11 @@
   "pages": [
     "pages/map/index",
     "pages/order/index",
-    "pages/coupon/index",
     "pages/profile/index",
     "pages/profile/orderHistory/index",
     "pages/profile/userInfo/index",
     "pages/profile/vehicleInfo/index",
-    "pages/profile/wallet/index",
-    "pages/profile/settings/index"
+    "pages/profile/wallet/index"
   ],
   "window": {
     "backgroundTextStyle": "light",
@@ -33,12 +31,6 @@
         "text": "订单",
         "iconPath": "assets/icons/order.png",
         "selectedIconPath": "assets/icons/order_selected.png"
-      },
-      {
-        "pagePath": "pages/coupon/index",
-        "text": "优惠券",
-        "iconPath": "assets/icons/coupon.png",
-        "selectedIconPath": "assets/icons/coupon_selected.png"
       },
       {
         "pagePath": "pages/profile/index",
