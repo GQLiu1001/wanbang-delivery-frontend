@@ -46,6 +46,32 @@
   margin-bottom: 10rpx;
 }
 
+.phone {
+  font-size: 28rpx;
+  color: #666666;
+  margin-bottom: 10rpx;
+}
+
+.audit-status {
+  font-size: 24rpx;
+  color: #FF9900;
+  background-color: rgba(255, 153, 0, 0.1);
+  padding: 4rpx 12rpx;
+  border-radius: 20rpx;
+  display: inline-block;
+  margin-top: 6rpx;
+}
+
+.audit-status.approved {
+  color: #52C41A;
+  background-color: rgba(82, 196, 26, 0.1);
+}
+
+.audit-status.rejected {
+  color: #F5222D;
+  background-color: rgba(245, 34, 45, 0.1);
+}
+
 .user-status {
   font-size: 26rpx;
   color: #3A7FED;

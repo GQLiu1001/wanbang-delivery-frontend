@@ -4,71 +4,25 @@
   <view class="main_content">
     <view class="userinfo_container">
       <image class="avatar" src="{{userInfo.avatar || '../../images/icons/avatar.png'}}" mode="aspectFill" />
-      <block wx:if="{{ !userInfo.driverName }}">
-        <view class="username" bind:tap="navigateToUserInfo">请完善个人信息</view>
-      </block>
-      <block wx:else>
-        <view class="username">{{userInfo.driverName || '司机'}}</view>
-        <view class="user-status">{{userInfo.status === 1 ? '空闲中' : userInfo.status === 2 ? '忙碌中' : '离线'}}</view>
-      </block>
-    </view>
-
-    <view class="stats-container">
-      <view class="stat-item">
-        <view class="stat-value">{{userInfo.orderCount || '0'}}</view>
-        <view class="stat-label">完成订单</view>
-      </view>
-      <view class="stat-item">
-        <view class="stat-value">{{userInfo.rating || '5.0'}}</view>
-        <view class="stat-label">平均评分</view>
-      </view>
-      <view class="stat-item">
-        <view class="stat-value">¥{{userInfo.monthlyIncome || '0.00'}}</view>
-        <view class="stat-label">本月收入</view>
+      <view class="user_info">
+        <block wx:if="{{ !userInfo.driverName }}">
+          <view class="username" bind:tap="navigateToUserInfo">请完善个人信息</view>
+        </block>
+        <block wx:else>
+          <view class="username">{{userInfo.driverName || '司机'}}</view>
+          <view class="phone">{{userInfo.phone || '未设置手机号'}}</view>
+          <view class="audit-status" wx:if="{{userInfo.auditStatus === 0}}">审核状态：待审核</view>
+          <view class="audit-status approved" wx:elif="{{userInfo.auditStatus === 1}}">审核状态：已通过</view>
+          <view class="audit-status rejected" wx:elif="{{userInfo.auditStatus === 2}}">审核状态：已拒绝</view>
+        </block>
       </view>
     </view>
     
     <view class="menu-container">
-      <view class="menu-title">我的信息</view>
       <view class="menu-item" bindtap="navigateToUserInfo">
         <view class="menu-left">
           <image class="menu-icon" src="../../images/icons/user.png" />
-          <view class="menu-text">个人信息</view>
-        </view>
-        <image class="arrow-icon" src="../../images/icons/arrow.png" />
-      </view>
-      
-      <view class="menu-item" bindtap="navigateToOrderHistory">
-        <view class="menu-left">
-          <image class="menu-icon" src="../../images/icons/order.png" />
-          <view class="menu-text">订单记录</view>
-        </view>
-        <image class="arrow-icon" src="../../images/icons/arrow.png" />
-      </view>
-      
-      <view class="menu-item" bindtap="navigateToWallet">
-        <view class="menu-left">
-          <image class="menu-icon" src="../../images/icons/wallet.png" />
-          <view class="menu-text">我的钱包</view>
-        </view>
-        <image class="arrow-icon" src="../../images/icons/arrow.png" />
-      </view>
-    </view>
-    
-    <view class="menu-container">
-      <view class="menu-title">帮助与支持</view>
-      <view class="menu-item">
-        <view class="menu-left">
-          <image class="menu-icon" src="../../images/icons/customer-service.svg" />
-          <button open-type="contact" class="contact-button">联系客服</button>
-        </view>
-        <image class="arrow-icon" src="../../images/icons/arrow.png" />
-      </view>
-      
-      <view class="menu-item" bindtap="gotoWxCodePage">
-        <view class="menu-left">
-          <image class="menu-icon" src="../../images/icons/share.svg" />
-          <view class="menu-text">分享小程序</view>
+          <view class="menu-text">修改信息</view>
         </view>
         <image class="arrow-icon" src="../../images/icons/arrow.png" />
       </view>

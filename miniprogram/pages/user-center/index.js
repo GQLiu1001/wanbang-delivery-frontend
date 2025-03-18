@@ -12,11 +12,9 @@ Page({
     content: "",
     userInfo: {
       driverName: '',
+      phone: '',
       avatar: '',
-      orderCount: '0',
-      rating: '5.0',
-      monthlyIncome: '0.00',
-      status: 1 // 1=空闲，2=忙碌，3=离线
+      auditStatus: 0 // 0: 未审核, 1: 已通过, 2: 被拒绝
     }
   },
 
@@ -48,11 +46,9 @@ Page({
       // 模拟用户数据，实际应从接口获取
       const mockUserInfo = {
         driverName: '张师傅',
+        phone: '13812345678',
         avatar: '',
-        orderCount: '58',
-        rating: '4.8',
-        monthlyIncome: '5280.00',
-        status: 1
+        auditStatus: 0 // 模拟未审核状态
       };
 
       this.setData({
@@ -107,11 +103,9 @@ Page({
           this.setData({
             userInfo: {
               driverName: '',
+              phone: '',
               avatar: '',
-              orderCount: '0',
-              rating: '5.0',
-              monthlyIncome: '0.00',
-              status: 3
+              auditStatus: 0
             }
           });
         }
