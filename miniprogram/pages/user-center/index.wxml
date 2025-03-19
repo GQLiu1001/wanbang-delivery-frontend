@@ -3,7 +3,7 @@
   <view class="top_bg" />
   <view class="main_content">
     <view class="userinfo_container">
-      <image class="avatar" src="{{userInfo.avatar || '../../images/icons/avatar.png'}}" mode="aspectFill" />
+      <image class="avatar" src="{{userInfo.avatar || '/assets/icons/avatar.png'}}" mode="aspectFill" />
       <view class="user_info">
         <block wx:if="{{ !userInfo.driverName }}">
           <view class="username" bind:tap="navigateToUserInfo">请完善个人信息</view>

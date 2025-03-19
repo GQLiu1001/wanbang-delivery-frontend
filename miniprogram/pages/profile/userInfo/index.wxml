@@ -2,7 +2,7 @@
 <view class="userinfo-container">
   <view class="userinfo-header">
     <view class="avatar-container">
-      <image class="avatar" src="{{userInfo.avatar || '/assets/images/default-avatar.png'}}" mode="aspectFill"></image>
+      <image class="avatar" src="{{userInfo.avatar || '/assets/icons/avatar.png'}}" mode="aspectFill"></image>
       <view class="avatar-edit" bindtap="chooseAvatar">
         <text class="edit-text">更换</text>
       </view>

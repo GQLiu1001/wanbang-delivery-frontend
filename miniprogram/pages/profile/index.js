@@ -10,6 +10,9 @@ Page({
   },
 
   onLoad() {
+    // 检查登录状态
+    if (!this.checkLoginStatus()) return;
+    
     this.loadUserInfo()
   },
 
@@ -92,5 +95,18 @@ Page({
         }
       }
     })
+  },
+
+  // 检查登录状态
+  checkLoginStatus() {
+    const userInfo = wx.getStorageSync('userInfo');
+    if (!userInfo || !userInfo.driverId) {
+      // 未登录，跳转到登录页面
+      wx.reLaunch({
+        url: '/pages/login/index'
+      });
+      return false;
+    }
+    return true;
   }
 }) 

@@ -16,6 +16,9 @@ Page({
    * 生命周期函数--监听页面加载
    */
   onLoad(options) {
+    // 检查登录状态
+    if (!this.checkLoginStatus()) return;
+    
     // 确保初始化后立即加载数据
     setTimeout(() => {
       this.loadOrders()
@@ -348,5 +351,18 @@ Page({
     }
     
     return orders
+  },
+
+  // 检查登录状态
+  checkLoginStatus() {
+    const userInfo = wx.getStorageSync('userInfo');
+    if (!userInfo || !userInfo.driverId) {
+      // 未登录，跳转到登录页面
+      wx.reLaunch({
+        url: '/pages/login/index'
+      });
+      return false;
+    }
+    return true;
   }
 })

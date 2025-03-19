@@ -2,7 +2,7 @@
   <!-- 用户信息卡片 -->
   <view class="user-card">
     <view class="user-info">
-      <image class="avatar" src="{{userInfo.avatar || '/assets/images/default-avatar.png'}}" mode="aspectFill"></image>
+      <image class="avatar" src="{{userInfo.avatar || '/assets/icons/avatar.png'}}" mode="aspectFill"></image>
       <view class="user-details">
         <text class="username">{{userInfo.driverName || '未登录'}}</text>
         <text class="user-id">ID: {{userInfo.driverId || '--'}}</text>

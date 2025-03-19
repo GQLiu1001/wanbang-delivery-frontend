@@ -5,7 +5,8 @@
     "pages/profile/index",
     "pages/profile/userInfo/index",
     "pages/profile/vehicleInfo/index",
-    "pages/profile/wallet/index"
+    "pages/profile/wallet/index",
+    "pages/login/index"
   ],
   "window": {
     "backgroundTextStyle": "light",

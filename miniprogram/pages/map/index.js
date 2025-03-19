@@ -94,8 +94,15 @@ Page({
 
   // 检查登录状态
   checkLoginStatus() {
-    // TODO: 实现登录状态检查
-    // 如果未登录，跳转到登录页面
+    const userInfo = wx.getStorageSync('userInfo');
+    if (!userInfo || !userInfo.driverId) {
+      // 未登录，跳转到登录页面
+      wx.reLaunch({
+        url: '/pages/login/index'
+      });
+      return false;
+    }
+    return true;
   },
 
   // 设置订单监听器（模拟服务器推送）
