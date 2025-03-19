@@ -1,6 +1,8 @@
 const app = getApp()
 // 引入地图选点插件
 const chooseLocation = requirePlugin('chooseLocation');
+// 引入API模块
+const api = require('../../utils/api');
 
 Page({
   data: {
@@ -144,6 +146,46 @@ Page({
   acceptOrder() {
     if (!this.data.newOrder) return
     
+    // 调用后端接口接单
+    // api.acceptOrder(this.data.newOrder.id)
+    //   .then(res => {
+    //     if (res.code === 200) {
+    //       // 使用返回的订单信息更新当前订单
+    //       this.setData({
+    //         currentOrder: res.data,
+    //         newOrderVisible: false,
+    //         newOrder: null,
+    //         deliveryStatus: '配送中',
+    //         orderStatus: '已接单',
+    //         customerPhone: res.data.customerPhone,
+    //         customerAddress: res.data.deliveryAddress,
+    //         nextActionText: '完成配送'
+    //       }, () => {
+    //         // 接单后立即规划路线
+    //         this.refreshRoute();
+    //       });
+    //       
+    //       // 显示接单成功提示
+    //       wx.showToast({
+    //         title: '接单成功',
+    //         icon: 'success'
+    //       });
+    //     } else {
+    //       wx.showToast({
+    //         title: res.message || '接单失败',
+    //         icon: 'none'
+    //       });
+    //     }
+    //   })
+    //   .catch(err => {
+    //     console.error('接单失败:', err);
+    //     wx.showToast({
+    //       title: '接单失败，请重试',
+    //       icon: 'none'
+    //     });
+    //   });
+    
+    // 模拟接单成功
     this.setData({
       currentOrder: this.data.newOrder,
       newOrderVisible: false,
@@ -162,8 +204,6 @@ Page({
         title: '接单成功',
         icon: 'success'
       })
-      
-      // TODO: 调用后端接口更新订单状态
     })
   },
   
@@ -174,7 +214,16 @@ Page({
       newOrder: null
     })
     
-    // TODO: 调用后端接口拒绝订单
+    // 目前API没有专门的拒绝订单接口，可能需要通过取消订单实现
+    // if (this.data.newOrder && this.data.newOrder.id) {
+    //   api.cancelOrder(this.data.newOrder.id, '司机拒绝接单')
+    //     .then(() => {
+    //       console.log('拒绝订单成功');
+    //     })
+    //     .catch(err => {
+    //       console.error('拒绝订单失败:', err);
+    //     });
+    // }
     
     wx.showToast({
       title: '已拒绝订单',
@@ -189,7 +238,14 @@ Page({
 
     if (isOnline) {
       this.startLocationUpdate()
-      // TODO: 调用后端接口更新司机状态为在线
+      // 调用后端接口更新司机状态为在线
+      // api.updateWorkStatus(1) // 1=在线/空闲
+      //   .then(() => {
+      //     console.log('更新司机状态为在线成功');
+      //   })
+      //   .catch(err => {
+      //     console.error('更新司机状态失败:', err);
+      //   });
       
       // 在线后可以接收订单
       this.setupOrderListener()
@@ -200,7 +256,14 @@ Page({
       })
     } else {
       this.stopLocationUpdate()
-      // TODO: 调用后端接口更新司机状态为离线
+      // 调用后端接口更新司机状态为离线
+      // api.updateWorkStatus(3) // 3=离线
+      //   .then(() => {
+      //     console.log('更新司机状态为离线成功');
+      //   })
+      //   .catch(err => {
+      //     console.error('更新司机状态失败:', err);
+      //   });
       
       wx.showToast({
         title: '已下线',
@@ -216,7 +279,7 @@ Page({
     const updateLocation = async () => {
       try {
         const location = await this.getCurrentLocation()
-        // TODO: 调用后端接口更新位置
+        // 调用后端接口更新位置
         await this.updateDriverLocation(location)
       } catch (error) {
         console.error('更新位置失败:', error)
@@ -240,12 +303,13 @@ Page({
   // 更新司机位置到服务器
   async updateDriverLocation(location) {
     try {
-      // TODO: 实现位置上报接口调用
+      // 实现位置上报接口调用
       const { latitude, longitude } = location
-      // const res = await wx.cloud.callFunction({
-      //   name: 'updateDriverLocation',
-      //   data: { latitude, longitude }
-      // })
+      // 可计算速度和精度，或者直接从location获取
+      const speed = location.speed || 0;
+      const accuracy = location.accuracy || 0;
+      
+      // await api.updateLocation(latitude, longitude, speed, accuracy);
     } catch (error) {
       console.error('位置上报失败:', error)
     }
@@ -258,9 +322,46 @@ Page({
       content: '确定要撤销当前订单吗？',
       success: (res) => {
         if (res.confirm) {
-          // TODO: 实际项目中需要调用后端接口取消订单
+          // 调用后端接口取消订单
+          // if (this.data.currentOrder && this.data.currentOrder.id) {
+          //   api.cancelOrder(this.data.currentOrder.id, '司机主动取消')
+          //     .then(res => {
+          //       if (res.code === 200) {
+          //         // 清除当前订单信息
+          //         this.setData({
+          //           currentOrder: null,
+          //           deliveryStatus: '空闲',
+          //           orderStatus: '',
+          //           customerPhone: '',
+          //           customerAddress: '',
+          //           routeDistance: '0.0',
+          //           routeTime: '0',
+          //           nextActionText: '接单',
+          //           markers: [],
+          //           polyline: []
+          //         });
+          //         
+          //         wx.showToast({
+          //           title: '已撤销订单',
+          //           icon: 'success'
+          //         });
+          //       } else {
+          //         wx.showToast({
+          //           title: res.message || '取消订单失败',
+          //           icon: 'none'
+          //         });
+          //       }
+          //     })
+          //     .catch(err => {
+          //       console.error('取消订单失败:', err);
+          //       wx.showToast({
+          //         title: '取消订单失败',
+          //         icon: 'none'
+          //       });
+          //     });
+          // }
           
-          // 清除当前订单信息
+          // 模拟取消成功
           this.setData({
             currentOrder: null,
             deliveryStatus: '空闲',
@@ -290,6 +391,55 @@ Page({
     const { deliveryLatitude, deliveryLongitude } = this.data.currentOrder
     
     try {
+      // 调用后端路线规划API
+      // api.getRoute(
+      //   this.data.latitude,
+      //   this.data.longitude,
+      //   deliveryLatitude,
+      //   deliveryLongitude
+      // )
+      //   .then(res => {
+      //     if (res.code === 200) {
+      //       const routeData = res.data;
+      //       // 处理路线数据
+      //       if (routeData.polyline) {
+      //         // 可能需要解码腾讯地图格式的polyline
+      //         this.renderRoute(routeData);
+      //       }
+      //       // 更新距离和时间信息
+      //       this.setData({
+      //         routeDistance: routeData.distance,
+      //         routeTime: routeData.duration
+      //       });
+      //     } else {
+      //       // 接口调用失败，使用简单路线
+      //       this.renderSimpleRoute({
+      //         from: {
+      //           latitude: this.data.latitude,
+      //           longitude: this.data.longitude
+      //         },
+      //         to: {
+      //           latitude: deliveryLatitude,
+      //           longitude: deliveryLongitude
+      //         }
+      //       });
+      //     }
+      //   })
+      //   .catch(err => {
+      //     console.error('获取路线失败:', err);
+      //     // 失败时使用简单路线
+      //     this.renderSimpleRoute({
+      //       from: {
+      //         latitude: this.data.latitude,
+      //         longitude: this.data.longitude
+      //       },
+      //       to: {
+      //         latitude: deliveryLatitude,
+      //         longitude: deliveryLongitude
+      //       }
+      //     });
+      //   });
+      
       // 临时解决方案：创建简单的直线路径
       this.renderSimpleRoute({
         from: {
@@ -479,7 +629,19 @@ Page({
     if (!this.data.currentOrder) return
 
     try {
-      // TODO: 实现订单状态更新接口调用
+      // 如果当前是"完成配送"状态，完成订单
+      if (this.data.nextActionText === '完成配送') {
+        // 调用后端接口完成订单
+        // const res = await api.completeOrder(this.data.currentOrder.id);
+        // if (res.code !== 200) {
+        //   wx.showToast({
+        //     title: res.message || '完成订单失败',
+        //     icon: 'none'
+        //   });
+        //   return;
+        // }
+      }
+      
       wx.showToast({
         title: '状态更新成功',
         icon: 'success'

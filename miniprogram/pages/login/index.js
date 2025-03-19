@@ -1,4 +1,6 @@
 // pages/login/index.js
+const api = require('../../utils/api');
+
 Page({
   data: {
     driverName: '',
@@ -21,12 +23,8 @@ Page({
       
       if (userInfo && userInfo.driverId) {
         // 如果已登录，则获取审核状态
-        // TODO: 调用后端接口获取审核状态
-        // const res = await wx.cloud.callFunction({
-        //   name: 'getDriverAuditStatus',
-        //   data: { driverId: userInfo.driverId }
-        // });
-        // const auditStatus = res.result.auditStatus;
+        // const res = await api.getAuditStatus();
+        // const auditStatus = res.data.auditStatus;
         
         // 模拟数据
         const auditStatus = 1; // 假设已审核通过
@@ -83,34 +81,29 @@ Page({
       // 获取微信登录凭证
       const { code } = await wx.login();
       
-      // TODO: 调用后端登录接口
-      // const res = await wx.cloud.callFunction({
-      //   name: 'login',
-      //   data: {
-      //     code,
-      //     phone: this.data.phone
-      //   }
-      // });
+      // 调用后端登录接口
+      // const res = await api.login(code, this.data.phone);
       
       // 模拟登录成功响应
       const res = {
-        result: {
-          success: true,
-          data: {
-            driverId: '123456',
-            driverName: '张三',
-            avatar: '',
-            auditStatus: 1 // 1=已通过
-          }
+        code: 200,
+        message: 'success',
+        data: {
+          driverId: '123456',
+          driverName: '张三',
+          avatar: '',
+          token: 'jwt_token...',
+          auditStatus: 1 // 1=已通过
         }
       };
       
-      if (res.result.success) {
-        // 保存用户信息到本地
-        wx.setStorageSync('userInfo', res.result.data);
+      if (res.code === 200) {
+        // 保存token和用户信息到本地
+        wx.setStorageSync('token', res.data.token);
+        wx.setStorageSync('userInfo', res.data);
         
         // 判断审核状态
-        if (res.result.data.auditStatus === 1) {
+        if (res.data.auditStatus === 1) {
           // 已审核通过，跳转到首页
           wx.reLaunch({
             url: '/pages/map/index'
@@ -118,7 +111,7 @@ Page({
         } else {
           // 设置审核状态
           this.setData({ 
-            auditStatus: res.result.data.auditStatus,
+            auditStatus: res.data.auditStatus,
             isSubmitting: false
           });
         }
@@ -166,36 +159,34 @@ Page({
       // 获取微信登录凭证
       const { code } = await wx.login();
       
-      // TODO: 调用后端注册接口
-      // const res = await wx.cloud.callFunction({
-      //   name: 'register',
-      //   data: {
-      //     code,
-      //     driverName: this.data.driverName,
-      //     phone: this.data.phone
-      //   }
+      // 调用后端注册接口
+      // const res = await api.register({
+      //   code,
+      //   driverName: this.data.driverName,
+      //   phone: this.data.phone
       // });
       
       // 模拟注册成功响应
       const res = {
-        result: {
-          success: true,
-          data: {
-            driverId: '123456',
-            driverName: this.data.driverName,
-            avatar: '',
-            auditStatus: 0 // 0=未审核
-          }
+        code: 200,
+        message: 'success',
+        data: {
+          driverId: '123456',
+          driverName: this.data.driverName,
+          avatar: '',
+          token: 'jwt_token...',
+          auditStatus: 0 // 0=未审核
         }
       };
       
-      if (res.result.success) {
-        // 保存用户信息到本地
-        wx.setStorageSync('userInfo', res.result.data);
+      if (res.code === 200) {
+        // 保存token和用户信息到本地
+        wx.setStorageSync('token', res.data.token);
+        wx.setStorageSync('userInfo', res.data);
         
         // 设置审核状态
         this.setData({ 
-          auditStatus: res.result.data.auditStatus,
+          auditStatus: res.data.auditStatus,
           isSubmitting: false
         });
         
