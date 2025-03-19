@@ -66,10 +66,6 @@
     <view class="panel-content">
       <view class="order-details">
         <view class="detail-row">
-          <text class="detail-label">客户</text>
-          <text class="detail-value">{{customerName}}</text>
-        </view>
-        <view class="detail-row">
           <text class="detail-label">电话</text>
           <text class="detail-value">{{customerPhone}}</text>
         </view>
@@ -77,13 +73,13 @@
           <text class="detail-label">地址</text>
           <text class="detail-value address-value">{{customerAddress}}</text>
         </view>
-        <view class="detail-row" wx:if="{{currentOrder.weight}}">
-          <text class="detail-label">货物</text>
-          <text class="detail-value">{{currentOrder.weight}} {{currentOrder.cargo}}</text>
+        <view class="detail-row" wx:if="{{currentOrder.tonnage}}">
+          <text class="detail-label">吨位</text>
+          <text class="detail-value">{{currentOrder.tonnage}}吨</text>
         </view>
-        <view class="detail-row" wx:if="{{currentOrder.price}}">
-          <text class="detail-label">运费</text>
-          <text class="detail-value price">{{currentOrder.price}}</text>
+        <view class="detail-row" wx:if="{{currentOrder.deliveryFee}}">
+          <text class="detail-label">配送费</text>
+          <text class="detail-value price">¥{{currentOrder.deliveryFee}}</text>
         </view>
       </view>
       
@@ -115,18 +111,18 @@
       
       <view class="popup-body">
         <view class="order-info-row highlight">
-          <text class="info-title">订单金额</text>
-          <text class="info-content price">{{newOrder.price}}</text>
+          <text class="info-title">配送费</text>
+          <text class="info-content price">¥{{newOrder.deliveryFee}}</text>
         </view>
         
         <view class="order-info-row">
-          <text class="info-title">客户</text>
-          <text class="info-content">{{newOrder.customerName}}</text>
+          <text class="info-title">吨位</text>
+          <text class="info-content">{{newOrder.tonnage}}吨</text>
         </view>
         
         <view class="order-info-row">
-          <text class="info-title">货物</text>
-          <text class="info-content">{{newOrder.weight}} {{newOrder.cargo}}</text>
+          <text class="info-title">电话</text>
+          <text class="info-content">{{newOrder.customerPhone}}</text>
         </view>
         
         <view class="order-info-row">

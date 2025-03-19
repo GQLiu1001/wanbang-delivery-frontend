@@ -15,7 +15,6 @@ Page({
     // 状态和路线信息
     deliveryStatus: '空闲',
     orderStatus: '',
-    customerName: '',
     customerPhone: '',
     customerAddress: '',
     routeDistance: '0.0',
@@ -114,7 +113,6 @@ Page({
         // 模拟收到新订单
         this.receiveNewOrder({
           id: 'order_' + Date.now(),
-          customerName: '张三',
           customerPhone: '13812345678',
           deliveryAddress: '上海市浦东新区张江高科技园区',
           deliveryLatitude: 31.210516,
@@ -122,9 +120,8 @@ Page({
           statusText: '待接单',
           nextActionText: '接单',
           // 添加订单特定信息
-          weight: '5吨',
-          cargo: '建材',
-          price: '￥500'
+          tonnage: '5.0',
+          deliveryFee: '55.00'
         })
       }
     }, 5000)
@@ -153,7 +150,6 @@ Page({
       newOrder: null,
       deliveryStatus: '配送中',
       orderStatus: '已接单',
-      customerName: this.data.newOrder.customerName,
       customerPhone: this.data.newOrder.customerPhone,
       customerAddress: this.data.newOrder.deliveryAddress,
       nextActionText: '完成配送'
@@ -269,7 +265,6 @@ Page({
             currentOrder: null,
             deliveryStatus: '空闲',
             orderStatus: '',
-            customerName: '',
             customerPhone: '',
             customerAddress: '',
             routeDistance: '0.0',
@@ -419,16 +414,14 @@ Page({
   createOrderWithLocation(location) {
     const mockOrder = {
       id: 'order_' + Date.now(),
-      customerName: '新客户',
       customerPhone: '13800138000',
       deliveryAddress: location.address || '选定的位置',
       deliveryLatitude: location.latitude,
       deliveryLongitude: location.longitude,
       statusText: '配送中',
       nextActionText: '完成配送',
-      weight: '3吨',
-      cargo: '日用品',
-      price: '￥300'
+      tonnage: '3.0',
+      deliveryFee: '35.00'
     };
     
     this.setData({ 
@@ -436,7 +429,6 @@ Page({
       showLocationPicker: false,
       deliveryStatus: '配送中',
       orderStatus: mockOrder.statusText,
-      customerName: mockOrder.customerName,
       customerPhone: mockOrder.customerPhone,
       customerAddress: mockOrder.deliveryAddress,
       nextActionText: mockOrder.nextActionText
@@ -507,7 +499,6 @@ Page({
           currentOrder: null,
           deliveryStatus: '空闲',
           orderStatus: '',
-          customerName: '',
           customerPhone: '',
           customerAddress: '',
           routeDistance: '0.0',

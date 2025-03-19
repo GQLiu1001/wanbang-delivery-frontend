@@ -29,10 +29,6 @@
       <view class="order-content">
         <view class="order-info">
           <view class="info-item">
-            <text class="info-label">客户:</text>
-            <text class="info-value">{{item.customerName}}</text>
-          </view>
-          <view class="info-item">
             <text class="info-label">电话:</text>
             <text class="info-value">{{item.customerPhone}}</text>
           </view>

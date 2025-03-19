@@ -340,7 +340,6 @@ Page({
       orders.push({
         id: `order_${Date.now()}_${i}`,
         deliveryNo: `D${Date.now().toString().substr(-8)}${i}`,
-        customerName: `客户${i + 1}`,
         customerPhone: `1381234${(1000 + i).toString().substr(-4)}`,
         deliveryAddress: `杭州市西湖区文三路${100 + i}号`,
         tonnage: (Math.random() * 5 + 1).toFixed(1),
