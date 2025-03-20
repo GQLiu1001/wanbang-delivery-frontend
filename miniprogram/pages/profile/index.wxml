@@ -8,16 +8,6 @@
         <text class="user-id">ID: {{userInfo.driverId || '--'}}</text>
       </view>
     </view>
-    <view class="user-stats">
-      <view class="stat-item">
-        <text class="stat-value">{{userInfo.orderCount || '0'}}</text>
-        <text class="stat-label">总单数</text>
-      </view>
-      <view class="stat-item">
-        <text class="stat-value">{{userInfo.monthlyIncome || '0.00'}}</text>
-        <text class="stat-label">月收入</text>
-      </view>
-    </view>
   </view>
 
   <!-- 功能菜单 -->

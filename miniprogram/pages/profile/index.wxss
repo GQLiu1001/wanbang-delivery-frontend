@@ -13,7 +13,6 @@
 .user-info {
   display: flex;
   align-items: center;
-  margin-bottom: 30rpx;
 }
 
 .avatar {
@@ -37,30 +36,6 @@
 
 .user-id {
   font-size: 26rpx;
-  color: #999999;
-}
-
-.user-stats {
-  display: flex;
-  justify-content: space-around;
-  padding-top: 20rpx;
-  border-top: 1rpx solid #EEEEEE;
-}
-
-.stat-item {
-  text-align: center;
-}
-
-.stat-value {
-  font-size: 32rpx;
-  font-weight: bold;
-  color: #333333;
-  display: block;
-  margin-bottom: 8rpx;
-}
-
-.stat-label {
-  font-size: 24rpx;
   color: #999999;
 }
 
