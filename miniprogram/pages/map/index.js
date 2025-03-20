@@ -3,6 +3,12 @@ const app = getApp()
 const chooseLocation = requirePlugin('chooseLocation');
 // 引入API模块
 const api = require('../../utils/api');
+// 引入腾讯地图SDK
+const QQMapWX = require('../../lib/qqmap-wx-jssdk.min.js');
+// 实例化腾讯地图SDK
+const qqmapsdk = new QQMapWX({
+  key: 'Z6SBZ-W7QWB-PDWU4-N2C2B-JVFD6-DZB7F' // 使用在config.js中相同的key
+});
 
 Page({
   data: {
@@ -47,12 +53,35 @@ Page({
     if (location) {
       console.log('选择的位置:', location);
       
-      // 可以根据需要处理选点返回的位置信息
-      // 例如：设置为配送目的地
-      if (!this.data.currentOrder) {
-        // 如果没有当前订单，可以创建一个新订单使用选择的位置
-        this.createOrderWithLocation(location);
-      }
+      // 使用腾讯地图SDK获取选择位置的详细信息
+      qqmapsdk.reverseGeocoder({
+        location: {
+          latitude: location.latitude,
+          longitude: location.longitude
+        },
+        success: (res) => {
+          console.log('获取选择位置详情成功:', res);
+          // 合并选点信息和地址详情
+          const enhancedLocation = {
+            ...location,
+            addressDetails: res.result
+          };
+          
+          // 可以根据需要处理选点返回的位置信息
+          // 例如：设置为配送目的地
+          if (!this.data.currentOrder) {
+            // 如果没有当前订单，可以创建一个新订单使用选择的位置
+            this.createOrderWithLocation(enhancedLocation);
+          }
+        },
+        fail: (error) => {
+          console.error('获取选择位置详情失败:', error);
+          // 继续使用原始位置信息
+          if (!this.data.currentOrder) {
+            this.createOrderWithLocation(location);
+          }
+        }
+      });
     }
   },
 
@@ -74,6 +103,9 @@ Page({
         latitude: location.latitude,
         longitude: location.longitude
       })
+      
+      // 使用腾讯地图SDK解析当前位置的地址信息
+      this.reverseGeocoder(location.latitude, location.longitude);
     } catch (error) {
       wx.showToast({
         title: '获取位置失败',
@@ -391,57 +423,9 @@ Page({
     const { deliveryLatitude, deliveryLongitude } = this.data.currentOrder
     
     try {
-      // 调用后端路线规划API
-      // api.getRoute(
-      //   this.data.latitude,
-      //   this.data.longitude,
-      //   deliveryLatitude,
-      //   deliveryLongitude
-      // )
-      //   .then(res => {
-      //     if (res.code === 200) {
-      //       const routeData = res.data;
-      //       // 处理路线数据
-      //       if (routeData.polyline) {
-      //         // 可能需要解码腾讯地图格式的polyline
-      //         this.renderRoute(routeData);
-      //       }
-      //       // 更新距离和时间信息
-      //       this.setData({
-      //         routeDistance: routeData.distance,
-      //         routeTime: routeData.duration
-      //       });
-      //     } else {
-      //       // 接口调用失败，使用简单路线
-      //       this.renderSimpleRoute({
-      //         from: {
-      //           latitude: this.data.latitude,
-      //           longitude: this.data.longitude
-      //         },
-      //         to: {
-      //           latitude: deliveryLatitude,
-      //           longitude: deliveryLongitude
-      //         }
-      //       });
-      //     }
-      //   })
-      //   .catch(err => {
-      //     console.error('获取路线失败:', err);
-      //     // 失败时使用简单路线
-      //     this.renderSimpleRoute({
-      //       from: {
-      //         latitude: this.data.latitude,
-      //         longitude: this.data.longitude
-      //       },
-      //       to: {
-      //         latitude: deliveryLatitude,
-      //         longitude: deliveryLongitude
-      //       }
-      //     });
-      //   });
-      
-      // 临时解决方案：创建简单的直线路径
-      this.renderSimpleRoute({
+      // 使用腾讯地图SDK进行路线规划
+      qqmapsdk.direction({
+        mode: 'driving',  // 驾车模式
         from: {
           latitude: this.data.latitude,
           longitude: this.data.longitude
@@ -449,31 +433,139 @@ Page({
         to: {
           latitude: deliveryLatitude,
           longitude: deliveryLongitude
+        },
+        success: (res) => {
+          console.log('腾讯地图路线规划成功:', res);
+          
+          // 解析返回的路线数据
+          const route = res.result.routes[0];
+          // 计算总距离和时间
+          const distance = route.distance / 1000;  // 转换为千米
+          const duration = Math.round(route.duration / 60);  // 转换为分钟
+          
+          // 更新路线信息
+          this.setData({
+            routeDistance: distance.toFixed(1),
+            routeTime: duration
+          });
+          
+          // 解析路线坐标点
+          this.renderTencentRoute(route);
+        },
+        fail: (error) => {
+          console.error('腾讯地图路线规划失败:', error);
+          // 失败时使用简单路线
+          this.renderSimpleRoute({
+            from: {
+              latitude: this.data.latitude,
+              longitude: this.data.longitude
+            },
+            to: {
+              latitude: deliveryLatitude,
+              longitude: deliveryLongitude
+            }
+          });
+          
+          // 计算简单的距离和时间估计
+          const distance = this.calculateDistance(
+            this.data.latitude, this.data.longitude,
+            deliveryLatitude, deliveryLongitude
+          );
+          
+          // 更新路线信息
+          const distanceKm = (distance / 1000).toFixed(1);
+          const timeMinutes = this.estimateDuration(distance);
+          
+          this.setData({
+            routeDistance: distanceKm,
+            routeTime: timeMinutes
+          });
         }
-      })
-      
-      // 计算简单的距离和时间估计
-      const distance = this.calculateDistance(
-        this.data.latitude, this.data.longitude,
-        deliveryLatitude, deliveryLongitude
-      )
-      
-      // 更新路线信息
-      const distanceKm = (distance / 1000).toFixed(1)
-      const timeMinutes = this.estimateDuration(distance)
-      
-      this.setData({
-        routeDistance: distanceKm,
-        routeTime: timeMinutes
-      })
-      
+      });
     } catch (error) {
-      console.error('路线规划失败:', error)
+      console.error('路线规划失败:', error);
       wx.showToast({
         title: '路线规划失败',
         icon: 'none'
-      })
+      });
     }
+  },
+  
+  // 渲染腾讯地图路线
+  renderTencentRoute(route) {
+    // 解析腾讯地图返回的路线数据，提取路径点
+    let points = [];
+    // 从each_steps中提取路径点
+    if (route.steps && route.steps.length > 0) {
+      route.steps.forEach(step => {
+        if (step.polyline) {
+          const polylinePoints = this.decodeTencentPolyline(step.polyline);
+          points = points.concat(polylinePoints);
+        }
+      });
+    }
+    
+    // 创建起点和终点标记
+    const markers = [
+      // 起点标记
+      {
+        id: 0,
+        longitude: this.data.longitude,
+        latitude: this.data.latitude,
+        width: 32,
+        height: 32,
+        callout: {
+          content: '当前位置',
+          color: '#FFFFFF',
+          bgColor: '#3A7FED',
+          padding: 8,
+          borderRadius: 4,
+          display: 'ALWAYS'
+        }
+      },
+      // 终点标记
+      {
+        id: 1,
+        longitude: this.data.currentOrder.deliveryLongitude,
+        latitude: this.data.currentOrder.deliveryLatitude,
+        width: 32,
+        height: 32,
+        callout: {
+          content: '配送地址',
+          color: '#FFFFFF',
+          bgColor: '#FF5151',
+          padding: 8,
+          borderRadius: 4,
+          display: 'ALWAYS'
+        }
+      }
+    ];
+    
+    // 设置路线和标记
+    this.setData({
+      polyline: [{
+        points: points,
+        color: '#3A7FED',
+        width: 6,
+        arrowLine: true
+      }],
+      markers: markers
+    });
+  },
+  
+  // 解码腾讯地图返回的polyline
+  decodeTencentPolyline(polyline) {
+    const points = [];
+    const len = polyline.length;
+    
+    for(let i = 0; i < len; i+=2) {
+      points.push({
+        latitude: polyline[i],
+        longitude: polyline[i+1]
+      });
+    }
+    
+    return points;
   },
   
   // 临时解决方案：渲染简单路线
@@ -697,5 +789,47 @@ Page({
       name: deliveryAddress,
       scale: 18
     })
-  }
+  },
+
+  // 反向地址解析 (坐标转地址)
+  reverseGeocoder(lat, lng) {
+    qqmapsdk.reverseGeocoder({
+      location: {
+        latitude: lat,
+        longitude: lng
+      },
+      success: (res) => {
+        console.log('反向地址解析成功:', res);
+        const addressInfo = res.result;
+        // 可以在这里更新UI显示当前位置的地址信息
+        // 例如：this.setData({ currentAddress: addressInfo.address });
+      },
+      fail: (error) => {
+        console.error('反向地址解析失败:', error);
+      }
+    });
+  },
+  
+  // 地址搜索功能
+  searchAddress(keyword) {
+    if (!keyword) return;
+    
+    qqmapsdk.search({
+      keyword: keyword,
+      page_size: 10,
+      success: (res) => {
+        console.log('地址搜索成功:', res);
+        const searchResults = res.data;
+        // 可以使用搜索结果更新UI
+        // 这里可以显示搜索结果列表供用户选择
+      },
+      fail: (error) => {
+        console.error('地址搜索失败:', error);
+        wx.showToast({
+          title: '搜索失败',
+          icon: 'none'
+        });
+      }
+    });
+  },
 }) 

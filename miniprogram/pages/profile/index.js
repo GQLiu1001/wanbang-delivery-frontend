@@ -3,9 +3,7 @@ Page({
     userInfo: {
       driverName: '',
       driverId: '',
-      avatar: '',
-      orderCount: '0',
-      monthlyIncome: '0.00'
+      avatar: ''
     }
   },
 
@@ -75,9 +73,7 @@ Page({
               userInfo: {
                 driverName: '',
                 driverId: '',
-                avatar: '',
-                orderCount: '0',
-                monthlyIncome: '0.00'
+                avatar: ''
               }
             })
 
