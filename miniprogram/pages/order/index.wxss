@@ -34,9 +34,10 @@
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 40rpx;
+  width: 40%;
   height: 4rpx;
   background-color: #3A7FED;
+  border-radius: 2rpx;
 }
 
 .order-list {

@@ -84,9 +84,12 @@ Page({
 
   // 切换选项卡
   switchTab: function(e) {
-    const status = parseInt(e.currentTarget.dataset.status)
+    const tab = e.currentTarget.dataset.tab
     this.setData({
-      activeTab: status
+      activeTab: tab,
+      page: 1,
+      orders: [],
+      hasMore: true
     }, () => {
       this.loadOrders()
     })
@@ -356,7 +359,9 @@ Page({
         customerPhone: '13812345678',
         price: 18.8,
         distance: 5.2,
-        estimatedTime: 30
+        estimatedTime: 30,
+        weight: '2.5吨',
+        goodsType: '建材'
       },
       {
         id: '10002',
@@ -367,7 +372,9 @@ Page({
         customerPhone: '13912345678',
         price: 25.5,
         distance: 3.8,
-        estimatedTime: 20
+        estimatedTime: 20,
+        weight: '1.8吨',
+        goodsType: '钢材'
       },
       {
         id: '10003',
@@ -379,19 +386,62 @@ Page({
         price: 32.0,
         distance: 7.5,
         estimatedTime: 45,
-        completedTime: new Date().getTime() - 82800000
+        completedTime: new Date().getTime() - 82800000,
+        weight: '3.2吨',
+        goodsType: '建材'
       },
       {
-        id: '10004',
-        status: 3,  // 已取消
+        id: '10005',
+        status: 0,  // 待接单
+        createTime: new Date().getTime() - 1800000,
+        pickupAddress: '南京市江宁区东山街道',
+        deliveryAddress: '南京市雨花台区软件大道',
+        customerPhone: '13888888888',
+        price: 28.5,
+        distance: 6.8,
+        estimatedTime: 35,
+        weight: '2.8吨',
+        goodsType: '钢筋'
+      },
+      {
+        id: '10006',
+        status: 1,  // 配送中
+        createTime: new Date().getTime() - 5400000,
+        pickupAddress: '南京市栖霞区仙林大学城',
+        deliveryAddress: '南京市江宁区百家湖',
+        customerPhone: '13777777777',
+        price: 42.0,
+        distance: 8.5,
+        estimatedTime: 50,
+        weight: '4.0吨',
+        goodsType: '水泥'
+      },
+      {
+        id: '10007',
+        status: 2,  // 已完成
         createTime: new Date().getTime() - 172800000,
-        pickupAddress: '南京市栖霞区文苑路9号',
-        deliveryAddress: '南京市浦口区浦泗路120号',
-        customerPhone: '13612345678',
-        price: 45.5,
-        distance: 12.3,
-        estimatedTime: 60,
-        cancelReason: '客户取消'
+        pickupAddress: '南京市浦口区浦口大道',
+        deliveryAddress: '南京市六合区大厂街道',
+        customerPhone: '13666666666',
+        price: 55.0,
+        distance: 15.2,
+        estimatedTime: 70,
+        completedTime: new Date().getTime() - 169200000,
+        weight: '5.5吨',
+        goodsType: '混凝土'
+      },
+      {
+        id: '10008',
+        status: 0,  // 待接单
+        createTime: new Date().getTime() - 2700000,
+        pickupAddress: '南京市溧水区柘塘街道',
+        deliveryAddress: '南京市高淳区淳溪街道',
+        customerPhone: '13555555555',
+        price: 68.0,
+        distance: 18.5,
+        estimatedTime: 80,
+        weight: '6.0吨',
+        goodsType: '钢材'
       }
     ]
     
@@ -401,11 +451,16 @@ Page({
       order.statusText = this.getStatusText(order.status)
     })
     
-    // 根据状态过滤订单
-    if (status === 0) {  // 全部订单
-      return allOrders
-    } else {
-      return allOrders.filter(order => order.status === status - 1)
+    // 根据activeTab过滤订单
+    switch(status) {
+      case 'waiting':
+        return allOrders.filter(order => order.status === 0);
+      case 'ongoing':
+        return allOrders.filter(order => order.status === 1);
+      case 'completed':
+        return allOrders.filter(order => order.status === 2);
+      default:
+        return allOrders;
     }
   },
   
