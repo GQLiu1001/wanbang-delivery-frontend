@@ -32,7 +32,8 @@ Page({
     showLocationPicker: false,
     // 新订单相关
     newOrderVisible: false,
-    newOrder: null
+    newOrder: null,
+    lastGeocoderCalls: {}
   },
 
   onLoad() {
@@ -53,35 +54,12 @@ Page({
     if (location) {
       console.log('选择的位置:', location);
       
-      // 使用腾讯地图SDK获取选择位置的详细信息
-      qqmapsdk.reverseGeocoder({
-        location: {
-          latitude: location.latitude,
-          longitude: location.longitude
-        },
-        success: (res) => {
-          console.log('获取选择位置详情成功:', res);
-          // 合并选点信息和地址详情
-          const enhancedLocation = {
-            ...location,
-            addressDetails: res.result
-          };
-          
-          // 可以根据需要处理选点返回的位置信息
-          // 例如：设置为配送目的地
-          if (!this.data.currentOrder) {
-            // 如果没有当前订单，可以创建一个新订单使用选择的位置
-            this.createOrderWithLocation(enhancedLocation);
-          }
-        },
-        fail: (error) => {
-          console.error('获取选择位置详情失败:', error);
-          // 继续使用原始位置信息
-          if (!this.data.currentOrder) {
-            this.createOrderWithLocation(location);
-          }
-        }
-      });
+      // 由于API配额限制，直接使用选点返回的位置信息
+      // 不再额外调用反向地址解析
+      if (!this.data.currentOrder) {
+        // 如果没有当前订单，可以创建一个新订单使用选择的位置
+        this.createOrderWithLocation(location);
+      }
     }
   },
 
@@ -104,8 +82,11 @@ Page({
         longitude: location.longitude
       })
       
-      // 使用腾讯地图SDK解析当前位置的地址信息
-      this.reverseGeocoder(location.latitude, location.longitude);
+      // 由于API配额限制，开发阶段不每次都调用反向地址解析
+      // 在生产环境或需要时才调用
+      if (app.globalData && app.globalData.enableMapApiCalls) {
+        this.reverseGeocoder(location.latitude, location.longitude);
+      }
     } catch (error) {
       wx.showToast({
         title: '获取位置失败',
@@ -423,37 +404,60 @@ Page({
     const { deliveryLatitude, deliveryLongitude } = this.data.currentOrder
     
     try {
-      // 使用腾讯地图SDK进行路线规划
-      qqmapsdk.direction({
-        mode: 'driving',  // 驾车模式
-        from: {
-          latitude: this.data.latitude,
-          longitude: this.data.longitude
-        },
-        to: {
-          latitude: deliveryLatitude,
-          longitude: deliveryLongitude
-        },
-        success: (res) => {
-          console.log('腾讯地图路线规划成功:', res);
+      // 调用后端路线规划API
+      api.getRoute(
+        this.data.latitude,
+        this.data.longitude,
+        deliveryLatitude,
+        deliveryLongitude
+      )
+        .then(res => {
+          console.log('后端路线规划返回:', res);
           
-          // 解析返回的路线数据
-          const route = res.result.routes[0];
-          // 计算总距离和时间
-          const distance = route.distance / 1000;  // 转换为千米
-          const duration = Math.round(route.duration / 60);  // 转换为分钟
-          
-          // 更新路线信息
-          this.setData({
-            routeDistance: distance.toFixed(1),
-            routeTime: duration
-          });
-          
-          // 解析路线坐标点
-          this.renderTencentRoute(route);
-        },
-        fail: (error) => {
-          console.error('腾讯地图路线规划失败:', error);
+          if (res.code === 200) {
+            const routeData = res.data;
+            // 处理路线数据
+            if (routeData.polyline) {
+              // 处理路线坐标点
+              this.renderRouteFromBackend(routeData);
+            }
+            // 更新距离和时间信息
+            this.setData({
+              routeDistance: routeData.distance ? (routeData.distance / 1000).toFixed(1) : '0.0',
+              routeTime: routeData.duration ? Math.round(routeData.duration / 60) : '0'
+            });
+          } else {
+            console.warn('后端路线规划接口返回错误:', res.message);
+            // 接口调用失败，使用简单路线
+            this.renderSimpleRoute({
+              from: {
+                latitude: this.data.latitude,
+                longitude: this.data.longitude
+              },
+              to: {
+                latitude: deliveryLatitude,
+                longitude: deliveryLongitude
+              }
+            });
+            
+            // 计算简单的距离和时间估计
+            const distance = this.calculateDistance(
+              this.data.latitude, this.data.longitude,
+              deliveryLatitude, deliveryLongitude
+            );
+            
+            // 更新路线信息
+            const distanceKm = (distance / 1000).toFixed(1);
+            const timeMinutes = this.estimateDuration(distance);
+            
+            this.setData({
+              routeDistance: distanceKm,
+              routeTime: timeMinutes
+            });
+          }
+        })
+        .catch(err => {
+          console.error('调用后端路线规划接口失败:', err);
           // 失败时使用简单路线
           this.renderSimpleRoute({
             from: {
@@ -480,29 +484,72 @@ Page({
             routeDistance: distanceKm,
             routeTime: timeMinutes
           });
-        }
-      });
+        });
     } catch (error) {
       console.error('路线规划失败:', error);
       wx.showToast({
         title: '路线规划失败',
         icon: 'none'
       });
+      
+      // 错误时使用简单路线
+      this.renderSimpleRoute({
+        from: {
+          latitude: this.data.latitude,
+          longitude: this.data.longitude
+        },
+        to: {
+          latitude: this.data.currentOrder.deliveryLatitude,
+          longitude: this.data.currentOrder.deliveryLongitude
+        }
+      });
     }
   },
   
-  // 渲染腾讯地图路线
-  renderTencentRoute(route) {
-    // 解析腾讯地图返回的路线数据，提取路径点
+  // 渲染后端返回的路线数据
+  renderRouteFromBackend(routeData) {
+    console.log('渲染后端返回的路线数据:', routeData);
+    
     let points = [];
-    // 从each_steps中提取路径点
-    if (route.steps && route.steps.length > 0) {
-      route.steps.forEach(step => {
-        if (step.polyline) {
-          const polylinePoints = this.decodeTencentPolyline(step.polyline);
-          points = points.concat(polylinePoints);
+    
+    // 解析后端返回的路线数据，提取路径点
+    if (routeData.polyline) {
+      // 根据后端返回的数据格式解析polyline
+      // 1. 如果是数组格式 [lat1,lng1,lat2,lng2,...]
+      if (Array.isArray(routeData.polyline)) {
+        const polyline = routeData.polyline;
+        for (let i = 0; i < polyline.length; i += 2) {
+          if (i + 1 < polyline.length) {
+            points.push({
+              latitude: polyline[i],
+              longitude: polyline[i + 1]
+            });
+          }
+        }
+      }
+      // 2. 如果是对象数组格式 [{lat:xx,lng:xx}, ...]
+      else if (Array.isArray(routeData.polyline) && routeData.polyline.length > 0 && typeof routeData.polyline[0] === 'object') {
+        points = routeData.polyline.map(point => ({
+          latitude: point.lat || point.latitude,
+          longitude: point.lng || point.longitude
+        }));
+      }
+    }
+    
+    // 如果没有足够的路线点，使用简单路线
+    if (points.length < 2) {
+      console.warn('未能从后端获取有效路线数据，使用简单路线');
+      this.renderSimpleRoute({
+        from: {
+          latitude: this.data.latitude,
+          longitude: this.data.longitude
+        },
+        to: {
+          latitude: this.data.currentOrder.deliveryLatitude,
+          longitude: this.data.currentOrder.deliveryLongitude
         }
       });
+      return;
     }
     
     // 创建起点和终点标记
@@ -551,21 +598,26 @@ Page({
       }],
       markers: markers
     });
+    
+    // 缩放地图以包含起点和终点
+    this.includePoints(points);
   },
   
-  // 解码腾讯地图返回的polyline
-  decodeTencentPolyline(polyline) {
-    const points = [];
-    const len = polyline.length;
+  // 缩放地图以包含所有点
+  includePoints(points) {
+    if (!points || points.length < 2) return;
     
-    for(let i = 0; i < len; i+=2) {
-      points.push({
-        latitude: polyline[i],
-        longitude: polyline[i+1]
+    console.log('缩放地图以包含所有点');
+    
+    try {
+      const mapCtx = wx.createMapContext('deliveryMap', this);
+      mapCtx.includePoints({
+        points: points,
+        padding: [80, 80, 80, 80]
       });
+    } catch (error) {
+      console.error('缩放地图失败:', error);
     }
-    
-    return points;
   },
   
   // 临时解决方案：渲染简单路线
@@ -793,6 +845,26 @@ Page({
 
   // 反向地址解析 (坐标转地址)
   reverseGeocoder(lat, lng) {
+    // 开发阶段，检查一下是否需要调用API以节省配额
+    if (!app.globalData || !app.globalData.enableMapApiCalls) {
+      console.log('地图API调用已暂时禁用，以节省配额');
+      return;
+    }
+    
+    // 限制调用频率，一分钟内同一位置只解析一次
+    const now = Date.now();
+    const locationKey = `${lat.toFixed(6)},${lng.toFixed(6)}`;
+    const lastCall = this.lastGeocoderCalls ? this.lastGeocoderCalls[locationKey] : 0;
+    
+    if (lastCall && now - lastCall < 60000) {
+      console.log('短时间内重复请求同一位置，跳过API调用');
+      return;
+    }
+    
+    // 记录本次调用时间
+    if (!this.lastGeocoderCalls) this.lastGeocoderCalls = {};
+    this.lastGeocoderCalls[locationKey] = now;
+    
     qqmapsdk.reverseGeocoder({
       location: {
         latitude: lat,
@@ -813,6 +885,12 @@ Page({
   // 地址搜索功能
   searchAddress(keyword) {
     if (!keyword) return;
+    
+    // 开发阶段，检查一下是否需要调用API以节省配额
+    if (!app.globalData || !app.globalData.enableMapApiCalls) {
+      console.log('地图API调用已暂时禁用，以节省配额');
+      return;
+    }
     
     qqmapsdk.search({
       keyword: keyword,
