@@ -2,7 +2,7 @@
   "miniprogramRoot": "miniprogram/",
   "cloudfunctionRoot": "cloudfunctions/",
   "setting": {
-    "urlCheck": true,
+    "urlCheck": false,
     "es6": true,
     "enhance": true,
     "postcss": true,
@@ -16,7 +16,7 @@
     "scopeDataCheck": false,
     "uglifyFileName": false,
     "checkInvalidKey": true,
-    "checkSiteMap": true,
+    "checkSiteMap": false,
     "uploadWithSourceMap": true,
     "compileHotReLoad": false,
     "useMultiFrameRuntime": true,
@@ -34,7 +34,14 @@
     "userConfirmedBundleSwitch": false,
     "packNpmManually": false,
     "packNpmRelationList": [],
-    "minifyWXSS": true
+    "minifyWXSS": true,
+    "ignoreDevUnusedFiles": false,
+    "useStaticServer": true,
+    "disableUseStrict": false,
+    "useCompilerPlugins": false,
+    "minifyWXML": true,
+    "minifyJS": true,
+    "ignoreUploadUnusedFiles": true
   },
   "appid": "wx9cc5a9218e2c173f",
   "projectname": "quickstart-wx-cloud",

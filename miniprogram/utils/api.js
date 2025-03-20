@@ -1,4 +1,5 @@
 const { config } = require('./config');
+const MapService = require('./map');
 
 // API路径
 const API = {
@@ -8,6 +9,10 @@ const API = {
     register: `${config.apiBaseUrl}/api/driver/register`,
     logout: `${config.apiBaseUrl}/api/driver/logout`,
     auditStatus: `${config.apiBaseUrl}/api/driver/audit-status`
+  },
+  // 路线相关
+  route: {
+    plan: `${config.apiBaseUrl}/api/route/plan`
   },
   // 司机相关
   driver: {
@@ -25,10 +30,6 @@ const API = {
     complete: `${config.apiBaseUrl}/api/order/complete`,
     cancel: `${config.apiBaseUrl}/api/order/cancel`,
     detail: `${config.apiBaseUrl}/api/order/detail`
-  },
-  // 地图与路线相关
-  map: {
-    route: `${config.apiBaseUrl}/api/map/route`
   }
 };
 
@@ -168,13 +169,29 @@ module.exports = {
     return request(API.order.cancel, 'POST', { orderId, cancelReason });
   },
   
-  // 获取路线规划
-  getRoute: (fromLat, fromLng, toLat, toLng) => {
-    return request(API.map.route, 'GET', null, {
-      fromLat,
-      fromLng,
-      toLat,
-      toLng
-    });
+  // 路线规划
+  planRoute: (data) => {
+    return request(API.route.plan, 'POST', data);
+  },
+  
+  // 地图服务相关方法
+  // 路线规划
+  getRoute: (from, to, mode = 'driving') => {
+    return MapService.getRoute(from, to, mode);
+  },
+
+  // 地点搜索
+  searchLocation: (keyword, location = null, pageSize = 10, pageIndex = 1) => {
+    return MapService.searchLocation(keyword, location, pageSize, pageIndex);
+  },
+
+  // 逆地址解析
+  reverseGeocode: (latitude, longitude, getPoi = 1) => {
+    return MapService.reverseGeocode(latitude, longitude, getPoi);
+  },
+
+  // 坐标转换
+  convertWGS84ToGCJ02: (latitude, longitude) => {
+    return MapService.convertWGS84ToGCJ02(latitude, longitude);
   }
 }; 

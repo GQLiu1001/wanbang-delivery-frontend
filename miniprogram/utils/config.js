@@ -12,14 +12,22 @@ const CONFIG = {
   // 开发环境配置
   [ENV.DEV]: {
     apiBaseUrl: 'http://localhost:8080',
-    mapKey: 'Z6SBZ-W7QWB-PDWU4-N2C2B-JVFD6-DZB7F', // 替换为实际的腾讯地图key
-    appName: '万邦送货'
+    appName: '万邦送货',
+    // 腾讯位置服务配置
+    map: {
+      key: 'Z6SBZ-W7QWB-PDWU4-N2C2B-JVFD6-DZB7F', // 使用已有的腾讯地图key
+      referer: 'wanbang.delivery.driver'
+    }
   },
   // 生产环境配置
   [ENV.PROD]: {
     apiBaseUrl: 'https://api.wanbang.com',
-    mapKey: 'Z6SBZ-W7QWB-PDWU4-N2C2B-JVFD6-DZB7F', // 替换为实际的腾讯地图key
-    appName: '万邦送货'
+    appName: '万邦送货',
+    // 腾讯位置服务配置
+    map: {
+      key: 'Z6SBZ-W7QWB-PDWU4-N2C2B-JVFD6-DZB7F', // 使用已有的腾讯地图key
+      referer: 'wanbang.delivery.driver'
+    }
   }
 };
 
