@@ -159,65 +159,60 @@ Page({
   acceptOrder() {
     if (!this.data.newOrder) return
     
-    // 调用后端接口接单
-    // api.acceptOrder(this.data.newOrder.id)
-    //   .then(res => {
-    //     if (res.code === 200) {
-    //       // 使用返回的订单信息更新当前订单
-    //       this.setData({
-    //         currentOrder: res.data,
-    //         newOrderVisible: false,
-    //         newOrder: null,
-    //         deliveryStatus: '配送中',
-    //         orderStatus: '已接单',
-    //         customerPhone: res.data.customerPhone,
-    //         customerAddress: res.data.deliveryAddress,
-    //         nextActionText: '完成配送'
-    //       }, () => {
-    //         // 接单后立即规划路线
-    //         this.refreshRoute();
-    //       });
-    //       
-    //       // 显示接单成功提示
-    //       wx.showToast({
-    //         title: '接单成功',
-    //         icon: 'success'
-    //       });
-    //     } else {
-    //       wx.showToast({
-    //         title: res.message || '接单失败',
-    //         icon: 'none'
-    //       });
-    //     }
-    //   })
-    //   .catch(err => {
-    //     console.error('接单失败:', err);
-    //     wx.showToast({
-    //       title: '接单失败，请重试',
-    //       icon: 'none'
-    //     });
-    //   });
-    
-    // 模拟接单成功
-    this.setData({
-      currentOrder: this.data.newOrder,
-      newOrderVisible: false,
-      newOrder: null,
-      deliveryStatus: '配送中',
-      orderStatus: '已接单',
-      customerPhone: this.data.newOrder.customerPhone,
-      customerAddress: this.data.newOrder.deliveryAddress,
-      nextActionText: '完成配送'
-    }, () => {
-      // 接单后立即规划路线
-      this.refreshRoute();
-      
-      // 显示接单成功提示
-      wx.showToast({
-        title: '接单成功',
-        icon: 'success'
+    // 获取当前位置
+    this.getCurrentLocation().then(location => {
+      // 调用后端接口接单
+      api.acceptOrder(
+        this.data.newOrder.id,
+        location.latitude,
+        location.longitude,
+        this.data.newOrder.deliveryAddress,
+        this.data.newOrder.deliveryLatitude,
+        this.data.newOrder.deliveryLongitude
+      )
+      .then(res => {
+        if (res.code === 200) {
+          // 使用返回的订单信息更新当前订单
+          this.setData({
+            currentOrder: this.data.newOrder,
+            newOrderVisible: false,
+            newOrder: null,
+            deliveryStatus: '配送中',
+            orderStatus: '已接单',
+            customerPhone: this.data.newOrder.customerPhone,
+            customerAddress: this.data.newOrder.deliveryAddress,
+            nextActionText: '完成配送'
+          }, () => {
+            // 接单后立即规划路线
+            this.refreshRoute();
+          });
+          
+          // 显示接单成功提示
+          wx.showToast({
+            title: '接单成功',
+            icon: 'success'
+          });
+        } else {
+          wx.showToast({
+            title: res.message || '接单失败',
+            icon: 'none'
+          });
+        }
       })
-    })
+      .catch(err => {
+        console.error('接单失败:', err);
+        wx.showToast({
+          title: '接单失败，请重试',
+          icon: 'none'
+        });
+      });
+    }).catch(err => {
+      console.error('获取位置失败:', err);
+      wx.showToast({
+        title: '获取位置失败，请允许位置权限',
+        icon: 'none'
+      });
+    });
   },
   
   // 拒绝订单
@@ -301,8 +296,8 @@ Page({
 
     // 立即更新一次
     updateLocation()
-    // 每30秒更新一次位置
-    this.data.locationUpdateTimer = setInterval(updateLocation, 30000)
+    // 每10秒更新一次位置
+    this.data.locationUpdateTimer = setInterval(updateLocation, 10000)
   },
 
   // 停止定时更新位置
@@ -322,7 +317,7 @@ Page({
       const speed = location.speed || 0;
       const accuracy = location.accuracy || 0;
       
-      // await api.updateLocation(latitude, longitude, speed, accuracy);
+      await api.updateLocation(latitude, longitude, speed, accuracy);
     } catch (error) {
       console.error('位置上报失败:', error)
     }

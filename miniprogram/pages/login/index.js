@@ -21,22 +21,22 @@ Page({
       // 从本地存储获取用户信息
       const userInfo = wx.getStorageSync('userInfo');
       
-      if (userInfo && userInfo.driverId) {
+      if (userInfo && userInfo.id) {
         // 如果已登录，则获取审核状态
-        // const res = await api.getAuditStatus();
-        // const auditStatus = res.data.auditStatus;
+        const res = await api.getAuditStatus();
         
-        // 模拟数据
-        const auditStatus = 1; // 假设已审核通过
-        
-        if (auditStatus === 1) {
-          // 已审核通过，直接跳转到首页
-          wx.reLaunch({
-            url: '/pages/map/index'
-          });
-        } else {
-          // 设置审核状态
-          this.setData({ auditStatus });
+        if (res.code === 200) {
+          const auditStatus = res.data.auditStatus;
+          
+          if (auditStatus === 1) {
+            // 已审核通过，直接跳转到首页
+            wx.reLaunch({
+              url: '/pages/map/index'
+            });
+          } else {
+            // 设置审核状态
+            this.setData({ auditStatus });
+          }
         }
       }
     } catch (error) {
@@ -82,28 +82,15 @@ Page({
       const { code } = await wx.login();
       
       // 调用后端登录接口
-      // const res = await api.login(code, this.data.phone);
-      
-      // 模拟登录成功响应
-      const res = {
-        code: 200,
-        message: 'success',
-        data: {
-          driverId: '123456',
-          driverName: '张三',
-          avatar: '',
-          token: 'jwt_token...',
-          auditStatus: 1 // 1=已通过
-        }
-      };
+      const res = await api.login(code, this.data.phone);
       
       if (res.code === 200) {
         // 保存token和用户信息到本地
         wx.setStorageSync('token', res.data.token);
-        wx.setStorageSync('userInfo', res.data);
+        wx.setStorageSync('userInfo', res.data.driverInfo);
         
         // 判断审核状态
-        if (res.data.auditStatus === 1) {
+        if (res.data.driverInfo.audit_status === 1) {
           // 已审核通过，跳转到首页
           wx.reLaunch({
             url: '/pages/map/index'
@@ -111,13 +98,13 @@ Page({
         } else {
           // 设置审核状态
           this.setData({ 
-            auditStatus: res.data.auditStatus,
+            auditStatus: res.data.driverInfo.audit_status,
             isSubmitting: false
           });
         }
       } else {
         wx.showToast({
-          title: '登录失败，请检查手机号',
+          title: res.message || '登录失败，请检查手机号',
           icon: 'none'
         });
         this.setData({ isSubmitting: false });
@@ -160,30 +147,13 @@ Page({
       const { code } = await wx.login();
       
       // 调用后端注册接口
-      // const res = await api.register({
-      //   code,
-      //   driverName: this.data.driverName,
-      //   phone: this.data.phone
-      // });
-      
-      // 模拟注册成功响应
-      const res = {
-        code: 200,
-        message: 'success',
-        data: {
-          driverId: '123456',
-          driverName: this.data.driverName,
-          avatar: '',
-          token: 'jwt_token...',
-          auditStatus: 0 // 0=未审核
-        }
-      };
+      const res = await api.register({
+        name: this.data.driverName,
+        phone: this.data.phone,
+        avatar: ''
+      });
       
       if (res.code === 200) {
-        // 保存token和用户信息到本地
-        wx.setStorageSync('token', res.data.token);
-        wx.setStorageSync('userInfo', res.data);
-        
         // 设置审核状态
         this.setData({ 
           auditStatus: res.data.auditStatus,
@@ -196,7 +166,7 @@ Page({
         });
       } else {
         wx.showToast({
-          title: '注册失败，请重试',
+          title: res.message || '注册失败，请重试',
           icon: 'none'
         });
         this.setData({ isSubmitting: false });

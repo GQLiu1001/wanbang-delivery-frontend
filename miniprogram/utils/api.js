@@ -4,31 +4,31 @@ const { config } = require('./config');
 const API = {
   // 认证相关
   auth: {
-    login: `${config.apiBaseUrl}/api/driver/login`,
-    register: `${config.apiBaseUrl}/api/driver/register`,
-    logout: `${config.apiBaseUrl}/api/driver/logout`,
-    auditStatus: `${config.apiBaseUrl}/api/driver/audit-status`
+    login: `${config.apiBaseUrl}/driver/login`,
+    register: `${config.apiBaseUrl}/driver/register`,
+    logout: `${config.apiBaseUrl}/driver/logout`,
+    auditStatus: `${config.apiBaseUrl}/driver/audit-status`
   },
   // 司机相关
   driver: {
-    info: `${config.apiBaseUrl}/api/driver/info`,
-    updateInfo: `${config.apiBaseUrl}/api/driver/update-info`,
-    status: `${config.apiBaseUrl}/api/driver/status`,
-    location: `${config.apiBaseUrl}/api/driver/location`,
-    wallet: `${config.apiBaseUrl}/api/driver/wallet`
+    info: `${config.apiBaseUrl}/driver/info`,
+    updateInfo: `${config.apiBaseUrl}/driver/update-info`,
+    status: `${config.apiBaseUrl}/driver/status`,
+    location: `${config.apiBaseUrl}/driver/location`,
+    wallet: `${config.apiBaseUrl}/driver/wallet`
   },
   // 订单相关
   order: {
-    list: `${config.apiBaseUrl}/api/order/list`,
-    available: `${config.apiBaseUrl}/api/order/available`,
-    accept: `${config.apiBaseUrl}/api/order/accept`,
-    complete: `${config.apiBaseUrl}/api/order/complete`,
-    cancel: `${config.apiBaseUrl}/api/order/cancel`,
-    detail: `${config.apiBaseUrl}/api/order/detail`
+    list: `${config.apiBaseUrl}/order/list`,
+    available: `${config.apiBaseUrl}/order/available`,
+    accept: `${config.apiBaseUrl}/order/accept`,
+    complete: `${config.apiBaseUrl}/order/complete`,
+    cancel: `${config.apiBaseUrl}/order/cancel`,
+    detail: `${config.apiBaseUrl}/order/detail`
   },
   // 地图与路线相关
   map: {
-    route: `${config.apiBaseUrl}/api/map/route`
+    route: `${config.apiBaseUrl}/map/route`
   }
 };
 
@@ -154,8 +154,15 @@ module.exports = {
   },
   
   // 接单
-  acceptOrder: (orderId) => {
-    return request(API.order.accept, 'POST', { orderId });
+  acceptOrder: (orderId, driverLatitude, driverLongitude, deliveryAddress, deliveryLatitude, deliveryLongitude) => {
+    return request(API.order.accept, 'POST', { 
+      orderId, 
+      driverLatitude, 
+      driverLongitude, 
+      deliveryAddress, 
+      deliveryLatitude, 
+      deliveryLongitude 
+    });
   },
   
   // 完成订单
