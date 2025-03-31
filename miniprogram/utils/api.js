@@ -4,29 +4,27 @@ const { config } = require('./config');
 const API = {
   // 认证相关
   auth: {
-    login: `${config.apiBaseUrl}/driver/login`,
-    register: `${config.apiBaseUrl}/driver/register`,
-    logout: `${config.apiBaseUrl}/driver/logout`,
-    auditStatus: `${config.apiBaseUrl}/driver/audit-status`
+    login: `${config.apiBaseUrl}/driver/auth/login`,
+    register: `${config.apiBaseUrl}/driver/auth/register`,
+    logout: `${config.apiBaseUrl}/driver/auth/logout/:id`,
+    auditStatus: `${config.apiBaseUrl}/driver/auth/audit-status/:id`
   },
   // 司机相关
   driver: {
-    info: `${config.apiBaseUrl}/driver/info`,
-    updateInfo: `${config.apiBaseUrl}/driver/update-info`,
-    status: `${config.apiBaseUrl}/driver/status`,
-    location: `${config.apiBaseUrl}/driver/location`,
-    wallet: `${config.apiBaseUrl}/driver/wallet`
+    info: `${config.apiBaseUrl}/driver/info/:id`,
+    updateInfo: `${config.apiBaseUrl}/driver/update-info/:id`,
+    status: `${config.apiBaseUrl}/driver/status/:id`,
+    location: `${config.apiBaseUrl}/driver/location/:id`,
+    wallet: `${config.apiBaseUrl}/driver/wallet/:id`
   },
   // 订单相关
   order: {
     list: `${config.apiBaseUrl}/order/list`,
-    available: `${config.apiBaseUrl}/order/available`,
     accept: `${config.apiBaseUrl}/order/accept`,
     complete: `${config.apiBaseUrl}/order/complete`,
-    cancel: `${config.apiBaseUrl}/order/cancel`,
-    detail: `${config.apiBaseUrl}/order/detail`
+    cancel: `${config.apiBaseUrl}/order/cancel`
   },
-  // 地图与路线相关
+  // 地图相关
   map: {
     route: `${config.apiBaseUrl}/map/route`
   }
@@ -63,13 +61,10 @@ const request = (url, method, data, params) => {
       data,
       header: getHeaders(),
       success: (res) => {
-        // 统一处理返回结果和错误
         if (res.statusCode >= 200 && res.statusCode < 300) {
           resolve(res.data);
         } else {
-          // 处理错误状态码
           if (res.statusCode === 401) {
-            // 未授权，清除本地token并跳转到登录页
             wx.removeStorageSync('token');
             wx.removeStorageSync('userInfo');
             wx.reLaunch({
@@ -88,94 +83,62 @@ const request = (url, method, data, params) => {
 
 // 导出API方法
 module.exports = {
-  // 登录
+  // 认证相关
   login: (code, phone) => {
     return request(API.auth.login, 'POST', { code, phone });
   },
   
-  // 注册
   register: (data) => {
     return request(API.auth.register, 'POST', data);
   },
   
-  // 登出
-  logout: () => {
-    return request(API.auth.logout, 'POST');
+  logout: (id) => {
+    return request(API.auth.logout, 'POST', null, { id });
   },
   
-  // 获取审核状态
-  getAuditStatus: () => {
-    return request(API.auth.auditStatus, 'GET');
+  getAuditStatus: (id) => {
+    return request(API.auth.auditStatus, 'GET', null, { id });
   },
   
-  // 获取司机信息
-  getDriverInfo: () => {
-    return request(API.driver.info, 'GET');
+  // 司机相关
+  getDriverInfo: (id) => {
+    return request(API.driver.info, 'GET', null, { id });
   },
   
-  // 更新司机信息
-  updateDriverInfo: (data) => {
-    return request(API.driver.updateInfo, 'POST', data);
+  updateDriverInfo: (id, data) => {
+    return request(API.driver.updateInfo, 'POST', data, { id });
   },
   
-  // 获取钱包余额
-  getWallet: () => {
-    return request(API.driver.wallet, 'GET');
+  updateWorkStatus: (id, status) => {
+    return request(API.driver.status, 'POST', { workStatus: status }, { id });
   },
   
-  // 更新司机工作状态
-  updateWorkStatus: (status) => {
-    return request(API.driver.status, 'POST', { workStatus: status });
+  updateLocation: (id, latitude, longitude) => {
+    return request(API.driver.location, 'POST', { latitude, longitude }, { id });
   },
   
-  // 更新司机位置
-  updateLocation: (latitude, longitude, speed, accuracy) => {
-    return request(API.driver.location, 'POST', {
-      latitude,
-      longitude,
-      speed,
-      accuracy
-    });
+  getWallet: (id) => {
+    return request(API.driver.wallet, 'GET', null, { id });
   },
   
-  // 获取订单列表
-  getOrders: (status, page = 1, size = 10) => {
-    return request(API.order.list, 'GET', null, { status, page, size });
+  // 订单相关
+  getOrders: (params = {}) => {
+    return request(API.order.list, 'GET', null, params);
   },
   
-  // 获取可接单列表
-  getAvailableOrders: (page = 1, size = 10) => {
-    return request(API.order.available, 'GET', null, { page, size });
+  acceptOrder: (data) => {
+    return request(API.order.accept, 'POST', data);
   },
   
-  // 获取订单详情
-  getOrderDetail: (orderId) => {
-    return request(API.order.detail, 'GET', null, { orderId });
-  },
-  
-  // 接单
-  acceptOrder: (orderId, driverLatitude, driverLongitude, deliveryAddress, deliveryLatitude, deliveryLongitude) => {
-    return request(API.order.accept, 'POST', { 
-      orderId, 
-      driverLatitude, 
-      driverLongitude, 
-      deliveryAddress, 
-      deliveryLatitude, 
-      deliveryLongitude 
-    });
-  },
-  
-  // 完成订单
   completeOrder: (orderId) => {
     return request(API.order.complete, 'POST', { orderId });
   },
   
-  // 取消订单
   cancelOrder: (orderId, cancelReason) => {
     return request(API.order.cancel, 'POST', { orderId, cancelReason });
   },
   
-  // 获取路线规划
+  // 地图相关
   getRoute: (fromLat, fromLng, toLat, toLng) => {
     return request(API.map.route, 'GET', null, {
       fromLat,

@@ -11,15 +11,15 @@ const CURRENT_ENV = ENV.DEV;
 const CONFIG = {
   // 开发环境配置
   [ENV.DEV]: {
-    apiBaseUrl: 'http://localhost:8001/api',
-    mapKey: 'Z6SBZ-W7QWB-PDWU4-N2C2B-JVFD6-DZB7F', // 替换为实际的腾讯地图key
-    appName: '万邦送货'
+    apiBaseUrl: 'http://localhost:8001/api',  // 更新为司机端接口地址
+    mapKey: 'Z6SBZ-W7QWB-PDWU4-N2C2B-JVFD6-DZB7F',
+    appName: '万邦送货-司机端'
   },
   // 生产环境配置
   [ENV.PROD]: {
-    apiBaseUrl: 'https://api.wanbang.com/api',
-    mapKey: 'Z6SBZ-W7QWB-PDWU4-N2C2B-JVFD6-DZB7F', // 替换为实际的腾讯地图key
-    appName: '万邦送货'
+    apiBaseUrl: 'https://api.wanbang.com/api',  // 生产环境地址需要替换为实际地址
+    mapKey: 'Z6SBZ-W7QWB-PDWU4-N2C2B-JVFD6-DZB7F',
+    appName: '万邦送货-司机端'
   }
 };
 
