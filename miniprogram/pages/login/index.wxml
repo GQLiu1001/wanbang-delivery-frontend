@@ -21,54 +21,24 @@
     </view>
   </block>
 
-  <!-- 登录/注册表单 -->
+  <!-- 登录表单 -->
   <block wx:if="{{auditStatus === null}}">
-    <!-- 注册表单 -->
-    <block wx:if="{{isRegistering}}">
-      <view class="form-container">
-        <view class="form-title">司机注册</view>
-        
-        <view class="form-item">
-          <view class="form-label">姓名</view>
-          <input class="form-input" type="text" placeholder="请输入真实姓名" 
-                 data-field="driverName" bindinput="handleInput" />
-        </view>
+    <view class="form-container">
+      <view class="form-title">司机登录/注册</view>
 
-        <view class="form-item">
-          <view class="form-label">手机号</view>
-          <input class="form-input" type="number" placeholder="请输入手机号" 
-                 data-field="phone" bindinput="handleInput" />
-        </view>
-
-        <button class="submit-btn" bindtap="handleRegister" loading="{{isSubmitting}}">
-          注册
-        </button>
-
-        <view class="switch-form">
-          已有账号？<text bindtap="showLoginForm" class="switch-btn">立即登录</text>
-        </view>
+      <view class="form-item">
+        <view class="form-label">手机号</view>
+        <input class="form-input" type="number" placeholder="请输入手机号" 
+               data-field="phone" bindinput="handleInput" />
       </view>
-    </block>
 
-    <!-- 登录表单 -->
-    <block wx:else>
-      <view class="form-container">
-        <view class="form-title">司机登录</view>
-
-        <view class="form-item">
-          <view class="form-label">手机号</view>
-          <input class="form-input" type="number" placeholder="请输入手机号" 
-                 data-field="phone" bindinput="handleInput" />
-        </view>
-
-        <button class="submit-btn" bindtap="handleLogin" loading="{{isSubmitting}}">
-          登录
-        </button>
-
-        <view class="switch-form">
-          还没有账号？<text bindtap="showRegisterForm" class="switch-btn">立即注册</text>
-        </view>
+      <button class="submit-btn" bindtap="handleLogin" loading="{{isSubmitting}}">
+        登录/注册
+      </button>
+      
+      <view class="login-tips">
+        首次登录将自动创建账号，并等待后台审核
       </view>
-    </block>
+    </view>
   </block>
 </view> 

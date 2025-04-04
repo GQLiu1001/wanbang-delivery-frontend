@@ -23,7 +23,7 @@
       </view>
       <view class="panel-row">
         <text class="info-label">时间</text>
-        <text class="info-value">{{routeTime}}分钟</text>
+        <text class="info-value">{{routeTime}}</text>
       </view>
     </view>
     

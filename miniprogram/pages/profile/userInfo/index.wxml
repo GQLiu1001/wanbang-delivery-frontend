@@ -13,7 +13,7 @@
   <view class="userinfo-form">
     <view class="form-item">
       <text class="form-label required">姓名</text>
-      <input class="form-input" value="{{userInfo.driverName}}" placeholder="请输入姓名" bindinput="inputDriverName" />
+      <input class="form-input" value="{{userInfo.name}}" placeholder="请输入姓名" bindinput="inputDriverName" />
     </view>
     
     <view class="form-item">

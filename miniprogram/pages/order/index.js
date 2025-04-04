@@ -101,55 +101,64 @@ Page({
       title: '加载中',
     })
     
-    // 尝试调用API，如果失败则使用模拟数据
-    // api.getOrderList(this.data.activeTab)
-    //   .then(res => {
-    //     wx.hideLoading()
-    //     wx.stopPullDownRefresh()
-    //     
-    //     if (res.code === 200) {
-    //       const orders = res.data || []
-    //       
-    //       // 格式化订单数据
-    //       orders.forEach(order => {
-    //         // 格式化时间
-    //         if (order.createTime) {
-    //           order.formattedTime = this.formatTime(new Date(order.createTime))
-    //         }
-    //         
-    //         // 设置状态文本
-    //         order.statusText = this.getStatusText(order.status)
-    //       })
-    //       
-    //       this.setData({
-    //         orders: orders
-    //       })
-    //     } else {
-    //       wx.showToast({
-    //         title: res.message || '获取订单失败',
-    //         icon: 'none'
-    //       })
-    //     }
-    //   })
-    //   .catch(err => {
-    //     console.error('获取订单列表失败:', err)
-    //     wx.hideLoading()
-    //     wx.stopPullDownRefresh()
-    //     wx.showToast({
-    //       title: '获取订单失败',
-    //       icon: 'none'
-    //     })
-    //   })
+    // 获取订单状态对应的后端API状态值
+    let orderStatus = null;
+    switch(this.data.activeTab) {
+      case 'waiting': // 待接单
+        orderStatus = 2;
+        break;
+      case 'ongoing': // 配送中
+        orderStatus = 3;
+        break;
+      case 'completed': // 已完成
+        orderStatus = 4;
+        break;
+      case 'cancelled': // 已取消
+        orderStatus = 5;
+        break;
+    }
     
-    // 使用模拟数据（API未实现前临时使用）
-    setTimeout(() => {
-      const mockOrders = this.getMockOrders(this.data.activeTab)
-      this.setData({
-        orders: mockOrders
+    // 调用API获取订单列表
+    api.getOrders(this.data.page, 10, orderStatus)
+      .then(res => {
+        wx.hideLoading()
+        wx.stopPullDownRefresh()
+        
+        if (res.code === 200) {
+          const orders = res.data.records || []
+          
+          // 格式化订单数据
+          orders.forEach(order => {
+            // 格式化时间
+            if (order.createTime) {
+              order.formattedTime = this.formatTime(new Date(order.createTime))
+            }
+            
+            // 设置状态文本
+            order.statusText = this.getStatusText(order.deliveryStatus)
+          })
+          
+          this.setData({
+            orders: this.data.page === 1 ? orders : [...this.data.orders, ...orders],
+            hasMore: orders.length === 10,
+            page: this.data.page + 1
+          })
+        } else {
+          wx.showToast({
+            title: res.message || '获取订单失败',
+            icon: 'none'
+          })
+        }
       })
-      wx.hideLoading()
-      wx.stopPullDownRefresh()
-    }, 500)
+      .catch(err => {
+        console.error('获取订单列表失败:', err)
+        wx.hideLoading()
+        wx.stopPullDownRefresh()
+        wx.showToast({
+          title: '获取订单失败',
+          icon: 'none'
+        })
+      })
   },
 
   // 加载更多订单
@@ -494,7 +503,7 @@ Page({
   // 检查登录状态
   checkLoginStatus() {
     const userInfo = wx.getStorageSync('userInfo');
-    if (!userInfo || !userInfo.driverId) {
+    if (!userInfo || !userInfo.id) {
       // 未登录，跳转到登录页面
       wx.reLaunch({
         url: '/pages/login/index'

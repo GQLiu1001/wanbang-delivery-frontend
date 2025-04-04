@@ -1,8 +1,10 @@
+const api = require('../../utils/api');
+
 Page({
   data: {
     userInfo: {
-      driverName: '',
-      driverId: '',
+      name: '',
+      id: '',
       avatar: ''
     }
   },
@@ -22,19 +24,27 @@ Page({
   // 加载用户信息
   async loadUserInfo() {
     try {
-      // TODO: 调用后端接口获取用户信息
-      // const res = await wx.cloud.callFunction({
-      //   name: 'getDriverInfo'
-      // })
-      // this.setData({
-      //   userInfo: res.result
-      // })
+      const localUserInfo = wx.getStorageSync('userInfo');
+      if (localUserInfo && localUserInfo.id) {
+        // 调用后端接口获取最新用户信息
+        const res = await api.getDriverInfo(localUserInfo.id);
+        if (res.code === 200) {
+          const driverInfo = res.data;
+          // 更新本地存储的用户信息
+          wx.setStorageSync('userInfo', driverInfo);
+          
+          // 更新页面显示
+          this.setData({
+            userInfo: driverInfo
+          });
+        }
+      }
     } catch (error) {
-      console.error('获取用户信息失败:', error)
+      console.error('获取用户信息失败:', error);
       wx.showToast({
         title: '获取信息失败',
         icon: 'none'
-      })
+      });
     }
   },
 
@@ -60,43 +70,44 @@ Page({
       success: async (res) => {
         if (res.confirm) {
           try {
-            // TODO: 调用退出登录接口
-            // await wx.cloud.callFunction({
-            //   name: 'logout'
-            // })
+            const userInfo = wx.getStorageSync('userInfo');
+            if (userInfo && userInfo.id) {
+              // 调用退出登录接口
+              await api.logout(userInfo.id);
+            }
             
             // 清除本地存储的用户信息
-            wx.clearStorageSync()
+            wx.clearStorageSync();
             
             // 重置用户信息
             this.setData({
               userInfo: {
-                driverName: '',
-                driverId: '',
+                name: '',
+                id: '',
                 avatar: ''
               }
-            })
+            });
 
             // 跳转到登录页面
             wx.reLaunch({
               url: '/pages/login/index'
-            })
+            });
           } catch (error) {
-            console.error('退出登录失败:', error)
+            console.error('退出登录失败:', error);
             wx.showToast({
               title: '退出失败',
               icon: 'none'
-            })
+            });
           }
         }
       }
-    })
+    });
   },
 
   // 检查登录状态
   checkLoginStatus() {
     const userInfo = wx.getStorageSync('userInfo');
-    if (!userInfo || !userInfo.driverId) {
+    if (!userInfo || !userInfo.id) {
       // 未登录，跳转到登录页面
       wx.reLaunch({
         url: '/pages/login/index'

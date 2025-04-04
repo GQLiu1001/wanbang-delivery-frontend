@@ -4,8 +4,8 @@
     <view class="user-info">
       <image class="avatar" src="{{userInfo.avatar || '/assets/icons/avatar.png'}}" mode="aspectFill"></image>
       <view class="user-details">
-        <text class="username">{{userInfo.driverName || '未登录'}}</text>
-        <text class="user-id">ID: {{userInfo.driverId || '--'}}</text>
+        <text class="username">{{userInfo.name || '未登录'}}</text>
+        <text class="user-id">ID: {{userInfo.id || '--'}}</text>
       </view>
     </view>
   </view>

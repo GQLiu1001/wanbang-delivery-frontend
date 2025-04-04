@@ -1,4 +1,6 @@
 // pages/profile/userInfo/index.js
+const api = require('../../../utils/api');
+
 Page({
 
   /**
@@ -6,7 +8,7 @@ Page({
    */
   data: {
     userInfo: {
-      driverName: '',
+      name: '',
       phone: '',
       avatar: '',
       auditStatus: 0 // 0: 未审核, 1: 已通过, 2: 被拒绝
@@ -17,7 +19,7 @@ Page({
    * 生命周期函数--监听页面加载
    */
   onLoad(options) {
-    this.loadUserInfo()
+    this.loadUserInfo();
   },
 
   /**
@@ -72,28 +74,29 @@ Page({
   // 加载用户信息
   async loadUserInfo() {
     try {
-      // TODO: 调用后端接口获取用户信息
-      // const res = await wx.cloud.callFunction({
-      //   name: 'getDriverInfo'
-      // })
+      const localUserInfo = wx.getStorageSync('userInfo');
       
-      // 模拟数据
-      const mockUserInfo = {
-        driverName: '张师傅',
-        phone: '13812345678',
-        avatar: '',
-        auditStatus: 0
+      if (localUserInfo && localUserInfo.id) {
+        // 调用后端接口获取用户信息
+        const res = await api.getDriverInfo(localUserInfo.id);
+        
+        if (res.code === 200) {
+          this.setData({
+            userInfo: res.data
+          });
+        } else {
+          wx.showToast({
+            title: res.message || '获取信息失败',
+            icon: 'none'
+          });
+        }
       }
-      
-      this.setData({
-        userInfo: mockUserInfo
-      })
     } catch (error) {
-      console.error('获取用户信息失败:', error)
+      console.error('获取用户信息失败:', error);
       wx.showToast({
         title: '获取信息失败',
         icon: 'none'
-      })
+      });
     }
   },
 
@@ -104,97 +107,84 @@ Page({
       sizeType: ['compressed'],
       sourceType: ['album', 'camera'],
       success: (res) => {
-        const tempFilePath = res.tempFilePaths[0]
+        const tempFilePath = res.tempFilePaths[0];
         
         // 更新头像
         this.setData({
           'userInfo.avatar': tempFilePath
-        })
+        });
         
         // TODO: 上传头像到服务器
-        // wx.uploadFile({
-        //   url: 'your-upload-url',
-        //   filePath: tempFilePath,
-        //   name: 'avatar',
-        //   success: (res) => {
-        //     const data = JSON.parse(res.data)
-        //     if (data.success) {
-        //       wx.showToast({
-        //         title: '头像上传成功',
-        //         icon: 'success'
-        //       })
-        //     }
-        //   },
-        //   fail: (error) => {
-        //     console.error('上传头像失败:', error)
-        //     wx.showToast({
-        //       title: '上传失败',
-        //       icon: 'none'
-        //     })
-        //   }
-        // })
+        // 由于后端可能没有支持头像上传功能，这里暂时不实现
       }
-    })
+    });
   },
 
   // 输入姓名
   inputDriverName(e) {
     this.setData({
-      'userInfo.driverName': e.detail.value
-    })
+      'userInfo.name': e.detail.value
+    });
   },
 
   // 输入手机号
   inputPhone(e) {
     this.setData({
       'userInfo.phone': e.detail.value
-    })
+    });
   },
 
   // 保存用户信息
   async saveUserInfo() {
     // 表单验证
-    if (!this.data.userInfo.driverName) {
+    if (!this.data.userInfo.name) {
       return wx.showToast({
         title: '请输入姓名',
         icon: 'none'
-      })
+      });
     }
     
     if (!this.data.userInfo.phone || !/^1\d{10}$/.test(this.data.userInfo.phone)) {
       return wx.showToast({
         title: '请输入正确的手机号',
         icon: 'none'
-      })
+      });
     }
     
     try {
-      // 设置为待审核状态
-      this.setData({
-        'userInfo.auditStatus': 0
-      })
+      const localUserInfo = wx.getStorageSync('userInfo');
       
-      // TODO: 调用后端接口保存用户信息
-      // await wx.cloud.callFunction({
-      //   name: 'updateDriverInfo',
-      //   data: this.data.userInfo
-      // })
-      
-      wx.showToast({
-        title: '提交成功，等待审核',
-        icon: 'success'
-      })
-      
-      // 返回上一页
-      setTimeout(() => {
-        wx.navigateBack()
-      }, 1500)
+      if (localUserInfo && localUserInfo.id) {
+        // 调用后端接口更新用户信息
+        const res = await api.updateDriverInfo(localUserInfo.id, this.data.userInfo.name);
+        
+        if (res.code === 200) {
+          wx.showToast({
+            title: '保存成功',
+            icon: 'success'
+          });
+          
+          // 更新本地存储的用户信息
+          localUserInfo.name = this.data.userInfo.name;
+          wx.setStorageSync('userInfo', localUserInfo);
+          
+          // 返回上一页
+          setTimeout(() => {
+            wx.navigateBack();
+          }, 1500);
+        } else {
+          wx.showToast({
+            title: res.message || '保存失败',
+            icon: 'none'
+          });
+        }
+      }
     } catch (error) {
-      console.error('保存用户信息失败:', error)
+      console.error('保存用户信息失败:', error);
       wx.showToast({
         title: '保存失败',
         icon: 'none'
-      })
+      });
     }
   }
-})
+});
