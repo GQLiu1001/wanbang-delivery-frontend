@@ -125,9 +125,13 @@ Page({
         wx.hideLoading()
         wx.stopPullDownRefresh()
         
+        console.log('API Response:', JSON.stringify(res));
+
         if (res.code === 200) {
           const orders = res.data.records || []
           
+          console.log('Processed Orders Data:', JSON.stringify(orders));
+
           // 格式化订单数据
           orders.forEach(order => {
             // 格式化时间

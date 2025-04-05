@@ -132,13 +132,6 @@
       </view>
       
       <view class="popup-footer">
-        <view class="countdown-bar">
-          <text>{{countdownTime || 60}}秒内应答</text>
-          <view class="progress-bar">
-            <view class="progress" style="width: {{(countdownTime || 60) / 60 * 100}}%;"></view>
-          </view>
-        </view>
-        
         <view class="popup-buttons">
           <button class="popup-btn reject" bindtap="rejectOrder">拒绝订单</button>
           <button class="popup-btn accept" bindtap="acceptOrder">接受订单</button>
