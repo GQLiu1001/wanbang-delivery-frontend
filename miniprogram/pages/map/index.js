@@ -3,11 +3,13 @@ const app = getApp()
 const chooseLocation = requirePlugin('chooseLocation');
 // 引入API模块
 const api = require('../../utils/api');
+// 引入配置模块
+const { config } = require('../../utils/config');
 // 引入腾讯地图SDK
 const QQMapWX = require('../../lib/qqmap-wx-jssdk.min.js');
 // 实例化腾讯地图SDK
 const qqmapsdk = new QQMapWX({
-  key: 'Z6SBZ-W7QWB-PDWU4-N2C2B-JVFD6-DZB7F' // 使用在config.js中相同的key
+  key: config.mapKey // 从配置文件中获取API密钥
 });
 
 Page({
@@ -168,61 +170,100 @@ Page({
       return;
     }
     
+    console.log('准备接单，订单数据:', this.data.newOrder);
+    
     // 获取当前位置
     this.getCurrentLocation().then(location => {
-      // 调用后端接口抢单
-      api.robNewOrder(
-        userInfo.id,
-        this.data.newOrder.orderNo
-      )
-      .then(res => {
-        if (res.code === 200 && res.data === true) {
-          // 抢单成功，确保保存完整的订单信息，包括经纬度
-          const currentOrder = {
-            ...this.data.newOrder,
-            // 确保记录经纬度信息，这些值现在来自于地址解析
-            deliveryLatitude: this.data.newOrder.deliveryLatitude,
-            deliveryLongitude: this.data.newOrder.deliveryLongitude
-          };
-          
-          // 更新当前订单
-          this.setData({
-            currentOrder: currentOrder,
-            newOrderVisible: false,
-            newOrder: null,
-            deliveryStatus: '配送中',
-            orderStatus: '已接单',
-            customerPhone: currentOrder.customerPhone,
-            customerAddress: currentOrder.deliveryAddress,
-            nextActionText: '完成配送'
-          }, () => {
-            // 接单后立即规划路线
-            this.refreshRoute();
-          });
-          
-          // 显示接单成功提示
-          wx.showToast({
-            title: '抢单成功',
-            icon: 'success'
-          });
-        } else {
-          wx.showToast({
-            title: res.message || '抢单失败',
-            icon: 'none'
-          });
-        }
-      })
-      .catch(err => {
-        console.error('抢单失败:', err);
-        wx.showToast({
-          title: '抢单失败，请重试',
-          icon: 'none'
-        });
-      });
+      console.log('当前位置:', location);
+
+      // 确保订单有配送地址坐标
+      if (!this.data.newOrder.deliveryLatitude || !this.data.newOrder.deliveryLongitude) {
+        console.log('订单使用默认坐标（上海市中心）');
+        this.data.newOrder.deliveryLatitude = 31.230416;
+        this.data.newOrder.deliveryLongitude = 121.473701;
+      }
+
+      // 直接进行抢单
+      this.doAcceptOrder(userInfo.id);
+      
     }).catch(err => {
       console.error('获取位置失败:', err);
       wx.showToast({
         title: '获取位置失败，请允许位置权限',
+        icon: 'none'
+      });
+    });
+  },
+  
+  // 执行抢单操作
+  doAcceptOrder(userId) {
+    console.log('开始执行抢单操作，用户ID:', userId);
+    // 调用后端接口抢单
+    api.robNewOrder(
+      userId,
+      this.data.newOrder.orderNo
+    )
+    .then(res => {
+      console.log('抢单接口返回:', res);
+      if (res.code === 200) {
+        // 抢单成功，确保保存完整的订单信息，包括经纬度
+        const currentOrder = {
+          ...this.data.newOrder,
+          // 确保记录经纬度信息
+          deliveryLatitude: this.data.newOrder.deliveryLatitude,
+          deliveryLongitude: this.data.newOrder.deliveryLongitude
+        };
+        
+        console.log('抢单成功，保存的订单数据:', currentOrder);
+        
+        // 更新当前订单
+        this.setData({
+          currentOrder: currentOrder,
+          newOrderVisible: false,
+          newOrder: null,
+          deliveryStatus: '配送中',
+          orderStatus: '已接单',
+          customerPhone: currentOrder.customerPhone,
+          customerAddress: currentOrder.deliveryAddress,
+          nextActionText: '完成配送'
+        });
+
+        // 显示接单成功提示
+        wx.showToast({
+          title: '抢单成功',
+          icon: 'success'
+        });
+
+        // 确保在setData完成后再调用路线规划
+        setTimeout(() => {
+          console.log('开始规划路线，当前订单数据:', this.data.currentOrder);
+          console.log('当前位置数据:', {
+            latitude: this.data.latitude,
+            longitude: this.data.longitude
+          });
+          
+          // 直接调用doRefreshRoute，传入正确的坐标
+          this.doRefreshRoute(
+            this.data.currentOrder.deliveryLatitude,
+            this.data.currentOrder.deliveryLongitude
+          );
+        }, 100);
+      } else {
+        wx.showToast({
+          title: res.message || '抢单失败',
+          icon: 'none'
+        });
+        // 重置状态并隐藏新订单弹窗
+        this.setData({
+          newOrderVisible: false,
+          newOrder: null
+        });
+      }
+    })
+    .catch(err => {
+      console.error('抢单失败:', err);
+      wx.showToast({
+        title: '抢单失败，请重试',
         icon: 'none'
       });
     });
@@ -413,58 +454,28 @@ Page({
 
   // 刷新路线规划
   refreshRoute() {
-    if (!this.data.currentOrder) return
-    
-    let { deliveryLatitude, deliveryLongitude, deliveryAddress } = this.data.currentOrder
-    
-    // 检查是否有有效的经纬度信息
-    if (!deliveryLatitude || !deliveryLongitude) {
-      console.log('订单缺少经纬度信息，尝试通过地址解析获取:', deliveryAddress);
-      
-      // 如果有地址但没有经纬度，使用地址解析获取经纬度
-      if (deliveryAddress) {
-        wx.showLoading({
-          title: '解析地址中...',
-          mask: true
-        });
-        
-        // 使用腾讯地图SDK进行地址解析
-        qqmapsdk.geocoder({
-          address: deliveryAddress,
-          success: (res) => {
-            wx.hideLoading();
-            if (res.status === 0 && res.result.location) {
-              // 解析成功，更新经纬度
-              const location = res.result.location;
-              console.log('地址解析成功:', location);
-              
-              // 更新当前订单经纬度
-              this.data.currentOrder.deliveryLatitude = location.lat;
-              this.data.currentOrder.deliveryLongitude = location.lng;
-              
-              // 使用解析后的经纬度重新调用路线规划
-              this.doRefreshRoute(location.lat, location.lng);
-            } else {
-              console.error('地址解析失败:', res);
-              // 解析失败时使用默认位置
-              this.handleRouteWithDefaultLocation();
-            }
-          },
-          fail: (error) => {
-            wx.hideLoading();
-            console.error('地址解析错误:', error);
-            // 解析失败时使用默认位置
-            this.handleRouteWithDefaultLocation();
-          }
-        });
-      } else {
-        // 没有地址也没有经纬度，使用默认位置
-        this.handleRouteWithDefaultLocation();
-      }
-    } else {
-      // 已有经纬度，直接规划路线
-      this.doRefreshRoute(deliveryLatitude, deliveryLongitude);
+    console.log('进入refreshRoute函数');
+    if (!this.data.currentOrder) {
+      console.log('没有当前订单，不进行路线规划');
+      return;
     }
+    
+    console.log('开始刷新路线，当前订单:', this.data.currentOrder);
+    console.log('当前位置:', {
+      latitude: this.data.latitude,
+      longitude: this.data.longitude
+    });
+
+    // 直接使用订单中的坐标
+    const destLat = this.data.currentOrder.deliveryLatitude;
+    const destLng = this.data.currentOrder.deliveryLongitude;
+    
+    console.log('即将调用doRefreshRoute，目的地坐标:', {
+      destLat,
+      destLng
+    });
+    
+    this.doRefreshRoute(destLat, destLng);
   },
   
   // 使用默认位置进行路线规划
@@ -493,107 +504,119 @@ Page({
   
   // 实际执行路线规划
   doRefreshRoute(destLat, destLng) {
+    console.log('进入doRefreshRoute，参数:', { destLat, destLng });
+    console.log('当前订单数据:', this.data.currentOrder);
+    console.log('当前位置:', {
+      latitude: this.data.latitude,
+      longitude: this.data.longitude
+    });
+    
+    if (!destLat || !destLng) {
+      console.error('目的地坐标无效');
+      wx.showToast({
+        title: '无法获取配送地址坐标',
+        icon: 'none'
+      });
+      return;
+    }
+
+    if (!this.data.latitude || !this.data.longitude) {
+      console.error('当前位置坐标无效');
+      wx.showToast({
+        title: '无法获取当前位置',
+        icon: 'none'
+      });
+      return;
+    }
+
     try {
+      const params = {
+        fromLat: this.data.latitude,
+        fromLng: this.data.longitude,
+        toLat: destLat,
+        toLng: destLng
+      };
+      
+      console.log('准备调用路线规划API，完整参数:', params);
+      console.log('API调用URL将包含参数:',
+        `fromLat=${params.fromLat}`,
+        `fromLng=${params.fromLng}`,
+        `toLat=${params.toLat}`,
+        `toLng=${params.toLng}`
+      );
+
       // 调用后端路线规划API
       api.getRoute(
-        this.data.latitude,
-        this.data.longitude,
-        destLat,
-        destLng
+        params.fromLat,
+        params.fromLng,
+        params.toLat,
+        params.toLng
       )
-        .then(res => {
-          console.log('后端路线规划返回:', res);
+      .then(res => {
+        console.log('后端路线规划返回:', res);
+        
+        if (res.code === 200) {
+          const routeData = res.data;
+          console.log('路线数据:', routeData);
           
-          if (res.code === 200) {
-            const routeData = res.data;
+          if (routeData && routeData.polyline) {
             // 处理路线数据
-            if (routeData.polyline) {
-              // 处理路线坐标点
-              this.renderRouteFromBackend(routeData);
-            }
+            this.renderRouteFromBackend(routeData);
+            
             // 更新距离和时间信息
-            // duration已经是分钟单位，直接使用
             const durationText = `${routeData.duration}分钟`;
             this.setData({
               routeDistance: routeData.distance ? (routeData.distance / 1000).toFixed(1) : '0.0',
               routeTime: durationText
             });
           } else {
-            console.warn('后端路线规划接口返回错误:', res.message);
-            // 接口调用失败，使用简单路线
-            this.renderSimpleRoute({
-              from: {
-                latitude: this.data.latitude,
-                longitude: this.data.longitude
-              },
-              to: {
-                latitude: destLat,
-                longitude: destLng
-              }
-            });
-            
-            // 计算简单的距离和时间估计
-            const distance = this.calculateDistance(
-              this.data.latitude, this.data.longitude,
-              destLat, destLng
-            );
-            
-            // 更新路线信息
-            const distanceKm = (distance / 1000).toFixed(1);
-            const timeMinutes = this.estimateDuration(distance);
-            
-            this.setData({
-              routeDistance: distanceKm,
-              routeTime: timeMinutes
-            });
+            console.warn('路线数据中没有polyline:', routeData);
+            this.handleRouteError();
           }
-        })
-        .catch(err => {
-          console.error('调用后端路线规划接口失败:', err);
-          // 失败时使用简单路线
-          this.renderSimpleRoute({
-            from: {
-              latitude: this.data.latitude,
-              longitude: this.data.longitude
-            },
-            to: {
-              latitude: destLat,
-              longitude: destLng
-            }
-          });
-          
-          // 计算简单的距离和时间估计
-          const distance = this.calculateDistance(
-            this.data.latitude, this.data.longitude,
-            destLat, destLng
-          );
-          
-          // 更新路线信息
-          const distanceKm = (distance / 1000).toFixed(1);
-          const timeMinutes = this.estimateDuration(distance);
-          
-          this.setData({
-            routeDistance: distanceKm,
-            routeTime: timeMinutes
-          });
-        });
+        } else {
+          console.warn('后端路线规划接口返回错误:', res.message);
+          this.handleRouteError();
+        }
+      })
+      .catch(err => {
+        console.error('调用后端路线规划接口失败:', err);
+        this.handleRouteError();
+      });
     } catch (error) {
       console.error('路线规划失败:', error);
-      wx.showToast({
-        title: '路线规划失败',
-        icon: 'none'
-      });
-      
-      // 错误时使用简单路线
+      this.handleRouteError();
+    }
+  },
+  
+  // 处理路线规划错误
+  handleRouteError() {
+    // 使用简单路线作为后备方案
+    if (this.data.currentOrder) {
       this.renderSimpleRoute({
         from: {
           latitude: this.data.latitude,
           longitude: this.data.longitude
         },
         to: {
-          latitude: destLat,
-          longitude: destLng
+          latitude: this.data.currentOrder.deliveryLatitude,
+          longitude: this.data.currentOrder.deliveryLongitude
         }
+      });
+      
+      // 计算简单的距离和时间估计
+      const distance = this.calculateDistance(
+        this.data.latitude,
+        this.data.longitude,
+        this.data.currentOrder.deliveryLatitude,
+        this.data.currentOrder.deliveryLongitude
+      );
+      
+      const distanceKm = (distance / 1000).toFixed(1);
+      const timeMinutes = this.estimateDuration(distance);
+      
+      this.setData({
+        routeDistance: distanceKm,
+        routeTime: timeMinutes
       });
     }
   },
@@ -887,41 +910,69 @@ Page({
     })
   },
 
-  // 反向地址解析 (坐标转地址)
+  // 反向地址解析（根据经纬度获取地址）
   reverseGeocoder(lat, lng) {
-    // 开发阶段，检查一下是否需要调用API以节省配额
-    if (!app.globalData || !app.globalData.enableMapApiCalls) {
-      console.log('地图API调用已暂时禁用，以节省配额');
+    const app = getApp();
+    
+    // 检查是否允许调用地图API
+    if (!app.globalData.enableMapApiCalls) {
+      console.log('地图API调用已禁用，跳过反向地址解析');
       return;
     }
     
-    // 限制调用频率，一分钟内同一位置只解析一次
-    const now = Date.now();
+    // 检查API调用频率限制
+    if (!app.canCallMapApi('reverseGeocoder')) {
+      console.log('API调用过于频繁，跳过本次反向地址解析');
+      return;
+    }
+    
+    // 生成调用的唯一键
     const locationKey = `${lat.toFixed(6)},${lng.toFixed(6)}`;
-    const lastCall = this.lastGeocoderCalls ? this.lastGeocoderCalls[locationKey] : 0;
     
-    if (lastCall && now - lastCall < 60000) {
-      console.log('短时间内重复请求同一位置，跳过API调用');
+    // 如果30分钟内已经查询过该位置，直接使用缓存结果
+    const cacheTime = 30 * 60 * 1000; // 30分钟
+    const now = Date.now();
+    const cachedResult = this.data.lastGeocoderCalls[locationKey];
+    
+    if (cachedResult && (now - cachedResult.timestamp) < cacheTime) {
+      console.log('使用缓存的地址解析结果');
       return;
     }
     
-    // 记录本次调用时间
-    if (!this.lastGeocoderCalls) this.lastGeocoderCalls = {};
-    this.lastGeocoderCalls[locationKey] = now;
+    // 直接调用反向地址解析接口，而不是通过SDK
+    const { config } = require('../../utils/config');
+    const url = `https://apis.map.qq.com/ws/geocoder/v1/?location=${lat},${lng}&key=${config.mapKey}`;
     
-    qqmapsdk.reverseGeocoder({
-      location: {
-        latitude: lat,
-        longitude: lng
-      },
+    wx.request({
+      url: url,
+      method: 'GET',
       success: (res) => {
-        console.log('反向地址解析成功:', res);
-        const addressInfo = res.result;
-        // 可以在这里更新UI显示当前位置的地址信息
-        // 例如：this.setData({ currentAddress: addressInfo.address });
+        const data = res.data;
+        if (data.status === 0) {
+          // 缓存结果
+          this.setData({
+            [`lastGeocoderCalls.${locationKey}`]: {
+              result: data.result,
+              timestamp: now
+            }
+          });
+          
+          console.log('反向地址解析成功:', data.result.address);
+        } else {
+          console.error('反向地址解析返回错误:', data);
+        }
       },
       fail: (error) => {
-        console.error('反向地址解析失败:', error);
+        console.error('反向地址解析请求错误:', error);
+        
+        // 显示友好的错误信息
+        if (error.status === 121 || (error.data && error.data.status === 121)) {
+          wx.showToast({
+            title: '地图服务配额已用尽，请明天再试',
+            icon: 'none',
+            duration: 3000
+          });
+        }
       }
     });
   },
@@ -936,17 +987,31 @@ Page({
       return;
     }
     
-    qqmapsdk.search({
-      keyword: keyword,
-      page_size: 10,
+    // 直接调用地点搜索接口，而不是通过SDK
+    const { config } = require('../../utils/config');
+    const encodedKeyword = encodeURIComponent(keyword);
+    const url = `https://apis.map.qq.com/ws/place/v1/search?keyword=${encodedKeyword}&boundary=region(全国,0)&page_size=10&key=${config.mapKey}`;
+    
+    wx.request({
+      url: url,
+      method: 'GET',
       success: (res) => {
-        console.log('地址搜索成功:', res);
-        const searchResults = res.data;
-        // 可以使用搜索结果更新UI
-        // 这里可以显示搜索结果列表供用户选择
+        const data = res.data;
+        if (data.status === 0) {
+          console.log('地址搜索成功:', data);
+          const searchResults = data.data;
+          // 可以使用搜索结果更新UI
+          // 这里可以显示搜索结果列表供用户选择
+        } else {
+          console.error('地址搜索返回错误:', data);
+          wx.showToast({
+            title: '搜索失败: ' + data.message,
+            icon: 'none'
+          });
+        }
       },
       fail: (error) => {
-        console.error('地址搜索失败:', error);
+        console.error('地址搜索请求错误:', error);
         wx.showToast({
           title: '搜索失败',
           icon: 'none'
@@ -968,70 +1033,33 @@ Page({
           
           // 获取第一个可用订单
           const newOrder = res.data[0];
+          console.log('处理新订单数据，完整订单信息:', newOrder);
           
-          // 如果地址存在但经纬度不存在，通过地址解析获取经纬度
-          if (newOrder.deliveryAddress && (!newOrder.deliveryLatitude || !newOrder.deliveryLongitude)) {
-            console.log('订单缺少经纬度信息，开始通过地址解析获取:', newOrder.deliveryAddress);
-            // 使用腾讯地图SDK进行地址解析
-            qqmapsdk.geocoder({
-              address: newOrder.deliveryAddress,
-              success: (geoRes) => {
-                console.log('地址解析成功:', geoRes);
-                if (geoRes.status === 0 && geoRes.result.location) {
-                  // 解析成功，使用解析结果
-                  const location = geoRes.result.location;
-                  this.receiveNewOrder({
-                    id: newOrder.id,
-                    orderNo: newOrder.orderNo,
-                    customerPhone: newOrder.customerPhone || '',
-                    deliveryAddress: newOrder.deliveryAddress,
-                    // 使用解析得到的经纬度
-                    deliveryLatitude: location.lat,
-                    deliveryLongitude: location.lng,
-                    statusText: '待接单',
-                    nextActionText: '接单',
-                    // 订单特定信息
-                    goodsWeight: newOrder.goodsWeight,
-                    deliveryFee: newOrder.deliveryFee
-                  });
-                  
-                  console.log('地址解析结果:', location.lat, location.lng);
-                } else {
-                  // 解析失败，使用默认值并显示警告
-                  console.error('地址解析失败，使用默认位置');
-                  this.handleNewOrderWithDefaultLocation(newOrder);
-                }
-              },
-              fail: (error) => {
-                console.error('地址解析错误:', error);
-                // 失败时使用默认值并显示警告
-                this.handleNewOrderWithDefaultLocation(newOrder);
-              }
-            });
-          } else {
-            // 如果已有经纬度或没有地址，直接使用现有数据
-            this.receiveNewOrder({
-              id: newOrder.id,
-              orderNo: newOrder.orderNo,
-              customerPhone: newOrder.customerPhone || '',
-              deliveryAddress: newOrder.deliveryAddress,
-              deliveryLatitude: newOrder.deliveryLatitude,
-              deliveryLongitude: newOrder.deliveryLongitude,
-              statusText: '待接单',
-              nextActionText: '接单',
-              goodsWeight: newOrder.goodsWeight,
-              deliveryFee: newOrder.deliveryFee
-            });
+          // 检查订单数据完整性
+          if (!newOrder.deliveryAddress) {
+            console.error('订单缺少配送地址');
+            return;
           }
+          
+          const orderData = {
+            id: newOrder.id,
+            orderNo: newOrder.orderNo,
+            customerPhone: newOrder.customerPhone || '',
+            deliveryAddress: newOrder.deliveryAddress,
+            // 使用默认坐标（上海市中心）如果没有提供坐标
+            deliveryLatitude: newOrder.deliveryLatitude || 31.230416,
+            deliveryLongitude: newOrder.deliveryLongitude || 121.473701,
+            statusText: '待接单',
+            nextActionText: '接单',
+            goodsWeight: newOrder.goodsWeight,
+            deliveryFee: newOrder.deliveryFee
+          };
+          
+          console.log('准备显示新订单，处理后的数据:', orderData);
+          this.receiveNewOrder(orderData);
+          
         } else {
           console.log('没有获取到新订单或订单为空');
-          if (this.data.isOnline && !this.data.currentOrder) {
-            wx.showToast({
-              title: '暂无新订单',
-              icon: 'none',
-              duration: 1500
-            });
-          }
         }
       })
       .catch(err => {

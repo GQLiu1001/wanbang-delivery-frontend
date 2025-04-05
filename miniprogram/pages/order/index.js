@@ -11,7 +11,8 @@ Page({
     orders: [],
     loading: false,
     page: 1,
-    hasMore: true
+    hasMore: true,
+    isMapPage: false
   },
 
   /**
@@ -511,5 +512,64 @@ Page({
       return false;
     }
     return true;
+  },
+
+  // 处理订单操作按钮的显示逻辑
+  processOrderActions(order) {
+    // 根据订单状态设置按钮显示
+    let actions = [];
+    
+    // 只在地图页面显示这些操作按钮，订单列表页面不显示
+    if (this.data.isMapPage) {
+      switch(order.status) {
+        case 1: // 待接单
+          actions = ['accept'];
+          break;
+        case 2: // 配送中
+          actions = ['navigate', 'cancel', 'complete'];
+          break;
+        // 其他状态...
+      }
+    }
+    
+    return {
+      ...order,
+      actions: actions
+    };
+  },
+
+  // 渲染订单列表
+  renderOrders(orders) {
+    const processedOrders = orders.map(order => {
+      // 添加状态文本
+      let statusText = '';
+      switch(order.status) {
+        case 1:
+          statusText = '待接单';
+          break;
+        case 2:
+          statusText = '配送中';
+          break;
+        case 3:
+          statusText = '已完成';
+          break;
+        case 4:
+          statusText = '已取消';
+          break;
+        default:
+          statusText = '未知状态';
+      }
+      
+      return {
+        ...order,
+        statusText: statusText,
+        // 配送中状态下不显示任何操作按钮
+        showActions: order.status !== 2
+      };
+    });
+    
+    this.setData({
+      orders: processedOrders
+    });
   }
 })

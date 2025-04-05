@@ -140,6 +140,7 @@ module.exports = {
   
   // 地图相关
   getRoute: (fromLat, fromLng, toLat, toLng) => {
+    console.log('调用路线规划API:', { fromLat, fromLng, toLat, toLng });
     const url = `${API.map.route}?fromLat=${fromLat}&fromLng=${fromLng}&toLat=${toLat}&toLng=${toLng}`;
     return request(url, 'GET', null);
   },
