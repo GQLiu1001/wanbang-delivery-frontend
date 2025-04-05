@@ -497,10 +497,10 @@ Page({
   // 根据状态码获取状态文本
   getStatusText: function(status) {
     const statusMap = {
-      0: '待接单',
-      1: '配送中',
-      2: '已完成',
-      3: '已取消'
+      2: '待接单',
+      3: '配送中',
+      4: '已完成',
+      5: '已取消'
     }
     return statusMap[status] || '未知状态'
   },
